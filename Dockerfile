@@ -70,6 +70,6 @@ USER 1000:1000
 # Определение точки входа и команды запуска
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Запуск сервера
+# Запуск сервера и бота
 EXPOSE 3000
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+CMD bundle exec rails server -b 0.0.0.0 -p $PORT & bundle exec ruby telegram_bot.rb
