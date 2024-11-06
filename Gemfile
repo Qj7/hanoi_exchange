@@ -39,8 +39,6 @@ gem 'telegram-bot-ruby'
 gem 'devise'
 gem 'devise-guests'
 
-gem 'foreman'
-
 gem 'dotenv-rails', require: 'dotenv/rails-now'
 
 group :development, :test do

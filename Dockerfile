@@ -49,9 +49,7 @@ COPY . .
 ARG SECRET_KEY_BASE
 ENV SECRET_KEY_BASE=${SECRET_KEY_BASE}
 
-# Предкомпиляция assets и bootsnap (временно без SECRET_KEY_BASE)
-RUN ./bin/rails assets:precompile RAILS_ENV=production && \
-    bundle exec bootsnap precompile app/ lib/
+RUN bundle exec rails assets:precompile
 
 # Удаление node_modules для уменьшения размера образа
 RUN rm -rf node_modules
