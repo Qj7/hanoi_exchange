@@ -26,8 +26,8 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev pkg-config python-is-python3 && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Установка Node.js версии 16 и Yarn
-ARG NODE_VERSION=16
+# Установка Node.js версии 18 и Yarn
+ARG NODE_VERSION=18
 RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g yarn && \
