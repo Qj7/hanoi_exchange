@@ -46,6 +46,9 @@ RUN yarn install --frozen-lockfile
 # Копирование кода приложения
 COPY . .
 
+ARG SECRET_KEY_BASE
+ENV SECRET_KEY_BASE=${SECRET_KEY_BASE}
+
 # Предкомпиляция assets и bootsnap (временно без SECRET_KEY_BASE)
 RUN ./bin/rails assets:precompile RAILS_ENV=production && \
     bundle exec bootsnap precompile app/ lib/
