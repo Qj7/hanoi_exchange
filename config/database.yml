@@ -80,6 +80,4 @@ test:
 #
 production:
   <<: *default
-  database: da_nang_cash_production
-  username: da_nang_cash
-  password: <%= ENV["DA_NANG_CASH_DATABASE_PASSWORD"] %>
+  url: <%= ENV["DATABASE_URL"] %>
