@@ -72,4 +72,4 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Запуск сервера и бота
 EXPOSE 3000
-CMD bundle exec rails server -b 0.0.0.0 -p $PORT & bundle exec ruby telegram_bot.rb
+CMD bundle exec rails server -b 0.0.0.0 -p $PORT && bundle exec ruby telegram_bot.rb
