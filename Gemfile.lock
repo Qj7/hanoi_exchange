@@ -367,7 +367,6 @@ DEPENDENCIES
   stimulus-rails
   telegram-bot-ruby
   turbo-rails
-  tzinfo-data
   web-console
 
 BUNDLED WITH
