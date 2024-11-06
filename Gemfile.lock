@@ -145,6 +145,7 @@ GEM
       multipart-post (~> 2)
     faraday-net_http (3.1.1)
       net-http
+    foreman (0.88.1)
     globalid (1.2.1)
       activesupport (>= 6.1)
     i18n (1.14.6)
@@ -354,6 +355,7 @@ DEPENDENCIES
   devise-guests
   dotenv-rails
   error_highlight (>= 0.4.0)
+  foreman
   jbuilder
   jsbundling-rails
   pg (~> 1.1)
