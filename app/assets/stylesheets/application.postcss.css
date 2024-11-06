@@ -1,0 +1,350 @@
+/* Entry point for your PostCSS build */
+@import "choices.js/public/assets/styles/choices.min.css";
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap');
+
+body.loading {
+  overflow: hidden;
+  background-color: black !important;
+  color: transparent !important;
+}
+
+/* Скрываем весь контент страницы */
+body.loading .main-wrapper {
+  display: none;
+}
+
+body {
+  background: linear-gradient(rgba(0, 0, 0, 0.66), rgba(0, 0, 0, 0.66)), url('bg.jpg') center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  color: white;
+  overflow-x: hidden;
+}
+
+.main-wrapper {
+  position: relative;
+  max-width: 410px;
+  width: 100%;
+  padding: 20px;
+  background: rgba(25, 24, 24, 0.74);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2.4px);
+  border: 1px solid rgba(25, 24, 24, 0.09);
+}
+
+#loadWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#loading-bar-spinner.spinner {
+  width: 80px;
+  height: 80px;
+  animation: loading-bar-spinner 0.4s linear infinite;
+}
+
+#loading-bar-spinner .spinner-icon {
+  width: 100%;
+  height: 100%;
+  border: solid 6px transparent;
+  border-top-color: #9D50BB;
+  border-left-color: #9D50BB;
+  border-radius: 50%;
+}
+
+@keyframes loading-bar-spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hidden {
+  display: none !important;
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.popup-content {
+  background: #222;
+  color: #fff;
+  padding: 20px 30px;
+  border-radius: 10px;
+  text-align: center;
+  width: 300px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.popup-close {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #6E48AA;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.popup-close:hover {
+  background-color: #9D50BB;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+}
+
+.logo-image {
+  max-width: 150px;
+  height: auto;
+}
+
+.section-title {
+  color: #fff;
+  font-size: 1.25rem;
+  margin-left: auto;
+  text-align: right;
+  animation: neon 1.5s ease-in-out infinite alternate;
+}
+
+.exchange-section {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  color: #fff;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.exchange-col {
+  text-align: center;
+}
+
+.exchange-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: default;
+}
+
+.exchange-icon {
+  color: white;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.purple-input {
+  background-color: #6E48AA !important;
+  max-width: 65px;
+  height: 30px;
+  color: white;
+  border: 1px solid #6E48AA;
+  border-radius: 14px;
+  padding: 0 10px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.custom-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #fff;
+  color: white;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 500; /* Жирнее для большей ширины */
+  letter-spacing: 0.1em;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Цвет границы при фокусе */
+.custom-input:focus {
+  outline: none;
+  border-color: #9D50BB; /* Фиолетовый цвет при выделении */
+  box-shadow: 0 0 5px rgba(157, 80, 187, 0.7); /* Фиолетовая тень */
+}
+
+.input-addon {
+  color: #9a9a9a;
+}
+
+.dropdown-section {
+  margin: 15px 0;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 10px;
+  background-color: #000;
+  color: white;
+  border: 1px solid #6E48AA;
+  border-radius: 4px;
+}
+
+.small-text {
+  font-size: 12px;
+  color: #9a9a9a;
+}
+
+.button {
+  background: #6E48AA;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+}
+
+.button:hover {
+  filter: brightness(110%);
+}
+
+.purple-button {
+  background-image: linear-gradient(to right, #9D50BB, #6E48AA);
+}
+
+.submit-section {
+  text-align: center;
+}
+
+@keyframes neon {
+  from {
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff00de,
+      0 0 70px #ff00de, 0 0 80px #ff00de, 0 0 100px #ff00de, 0 0 150px #ff00de;
+  }
+  to {
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff00de,
+      0 0 35px #ff00de, 0 0 40px #ff00de, 0 0 50px #ff00de, 0 0 75px #ff00de;
+  }
+}
+
+.choices {
+  background-color: black;
+  color: white;
+  margin-bottom: 5px;
+}
+
+/* Окно с выпадающими элементами */
+.choices__list--dropdown .choices__item {
+  background-color: black;
+  color: white;
+}
+
+/* Стиль выбранных элементов */
+.choices__list--multiple .choices__item {
+  background-color: black;
+  border: 1px solid #6E48AA;
+  color: white;
+}
+
+/* Стили для элементов при наведении */
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+  background-color: #6E48AA;
+  color: white;
+}
+
+/* Поле ввода */
+.choices__input--cloned {
+  background-color: black;
+  color: white;
+  border: 1px solid #6E48AA;
+}
+
+.choices__inner {
+  background-color: black;
+  color: white;
+  border: 1px solid #6E48AA;
+  padding-top: 5px;
+  padding-bottom: 5px; /* Делаем одинаковые отступы сверху и снизу */
+  padding-left: 10px;
+  padding-right: 10px;
+
+  box-sizing: border-box; /* Учитываем padding при расчете ширины */
+  height: auto; /* Высота по содержимому */
+  min-height: 30px;
+  line-height: 1.2;
+}
+
+/* Стили текста внутри инпута */
+.choices__input,
+.choices__inner .choices__placeholder {
+  background-color: black;
+  color: white;
+  border: none; /* Убираем стандартную границу, если нужна */
+}
+
+/* Стили для инпута в фокусе */
+.choices__input--cloned:focus,
+.choices__inner:focus {
+  background-color: black;
+  border-color: #6E48AA; /* Подсветка границы при фокусе */
+  outline: none; /* Убираем стандартное обрамление */
+}
+
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+  background-color: #6E48AA !important; /* Фиолетовый фон */
+  color: white !important; /* Белый текст */
+}
+
+/* Убираем отступ в choices__list--dropdown для всех выпадающих списков */
+.choices__list--dropdown .choices__item {
+  padding-left: 0 !important;
+  padding-left: 5px;
+}
+
+.choices__list--single {
+  padding: 4px 0;
+}
+
+/* Убираем кнопку удаления для предотвращения пустого значения */
+.choices__item .choices__button {
+  display: none !important;
+}

@@ -1,0 +1,66 @@
+<div data-controller="hello"
+     data-hello-usdt-rate-value="<%= @exchange_rate.usdt %>"
+     data-hello-rub-rate-value="<%= @exchange_rate.rub %>"
+     data-hello-vnd-rate-value="<%= @exchange_rate.vnd %>"
+     class="main-wrapper">
+  <%= form_with url: create_order_path, method: :post, remote: true, data: { hello_target: "form" } do |f| %>
+    <%= hidden_field_tag :user_telegram_id, @user_telegram_id %>
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token, data: { hello_target: "authenticityToken" } %>
+    <%= f.hidden_field :sum, data: { hello_target: "sumField" } %>
+    <%= f.hidden_field :to_receive_amount, data: { hello_target: "toReceiveAmount" } %>
+
+    <div class="header">
+      <div class="logo-container">
+        <%= image_tag "logo.png", alt: "Da Nang Cash Logo", class: "logo-image" %>
+      </div>
+      <h4 class="section-title">Обмен валют</h4>
+    </div>
+
+    <div class="exchange-section">
+      <div class="exchange-col">
+        <p>ОТДАЮ</p>
+        <%= f.select :from_currency, options_for_select([['RUB', 'RUB'], ['USDT', 'USDT'], ['VND', 'VND']]), {}, class: "purple-input", data: { hello_target: "fromCurrency", action: "change->hello#updateLabels change->hello#calculateAmount" } %>
+      </div>
+
+      <div class="exchange-col">
+        <button type="button" class="exchange-button" data-action="click->hello#toggleExchange" disabled>
+          <i class="exchange-icon">⇆</i>
+        </button>
+      </div>
+
+      <div class="exchange-col">
+        <p>ПОЛУЧАЮ</p>
+        <%= f.select :to_currency, options_for_select([['VND', 'VND'], ['RUB', 'RUB'], ['USDT', 'USDT']]), {}, class: "purple-input", data: { hello_target: "toCurrency", action: "change->hello#updateLabels change->hello#calculateAmount" } %>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <p>Укажите сумму в <span data-hello-target="inputCurrencyLabel">RUB</span></p>
+      <input type="text" class="custom-input"
+       data-hello-target="amountInput"
+       data-action="input->hello#formatCurrencyOnInput blur->hello#formatCurrencyOnBlur input->hello#calculateAmount">
+    </div>
+
+    <div class="output-group" style="margin-top: -20px; margin-bottom: 15px">
+      <p>Получите сумму в <span data-hello-target="outputCurrencyLabel">VND</span>: <span style="font-weight: 600" data-hello-target="calculatedOutput">0</span></p>
+      <small style="display: block; margin-top: -15px; color: grey">онлайн калькулятор показывает примерную сумму, точную сумму вам сообщит менеджер</small>
+    </div>
+
+    <div class="dropdown-section">
+      <p>Способ оплаты</p>
+      <%= f.select :payment_method, options_for_select(@payment_methods), {}, class: "custom-select", id: "payment_method" %>
+    </div>
+
+    <div class="dropdown-section">
+      <p>Способ получения</p>
+      <%= f.select :delivery_method, options_for_select(@delivery_methods), {}, class: "custom-select", id: "delivery_method" %>
+      <small>Максимальная выдача VND по QR коду: 10 миллионов</small>
+    </div>
+
+    <div class="submit-section">
+      <button class="button purple-button" data-action="click->hello#submitRequest">
+        <i class="fa fa-arrow-right"></i> Отправить заявку
+      </button>
+    </div>
+  <% end %>
+</div>
