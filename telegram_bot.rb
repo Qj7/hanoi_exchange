@@ -22,7 +22,7 @@ Telegram::Bot::Client.run(ENV['TELEGRAM_BOT_TOKEN'], logger: Logger.new(STDOUT))
         CAPTION
 
         # Создаем кнопку для веб-приложения
-        kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: '💶 Начать обмен', web_app: { url: "https://e86f-1-54-154-188.ngrok-free.app?chat_id=#{chat_id}&username=#{username}" })]]
+        kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: '💶 Начать обмен', web_app: { url: "https://web-production-22d58.up.railway.app/?chat_id=#{chat_id}&username=#{username}" })]]
         markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
 
         bot.api.send_photo(chat_id: chat_id, photo: UploadIO.new(photo, 'image/png', 'bstart.png'), caption: caption, reply_markup: markup)
