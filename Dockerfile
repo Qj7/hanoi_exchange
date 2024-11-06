@@ -47,7 +47,8 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # Предкомпиляция assets и bootsnap
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile && \
+RUN echo "SECRET_KEY_BASE=${SECRET_KEY_BASE}" && \
+    ./bin/rails assets:precompile && \
     bundle exec bootsnap precompile app/ lib/
 
 # Удаление node_modules для уменьшения размера образа
