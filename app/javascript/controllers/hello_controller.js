@@ -104,10 +104,18 @@ export default class extends Controller {
     this.popup.classList.add("hidden");
   }
 
-  submitRequest() {
+  submitRequest(e) {
+    e.preventDefault();
     this.sumFieldTarget.value = this.amountInputTarget.value.replace(/\s/g, '');
-    this.formTarget.requestSubmit();
-    this.showPopup();
-    this.amountInputTarget.value = "";
+    // this.formTarget.requestSubmit();
+    // this.showPopup();
+    // this.amountInputTarget.value = "";
+    if (this.sumFieldTarget.value.trim().length > 0) {
+      this.formTarget.requestSubmit();
+      this.showPopup();
+      this.amountInputTarget.value = "";
+    } else {
+      alert("Введите сумму для обмена");
+    }
   }
 }

@@ -10,8 +10,6 @@ class HomeController < ApplicationController
   end
 
   def create
-    p '--------------'
-    p params
     order = Order.create(
       name: params[:name],
       currency: params[:from_currency],
@@ -63,8 +61,7 @@ class HomeController < ApplicationController
   def get_exchange_rate(from_currency, to_currency)
     exchange_rate = ExchangeRate.order(created_at: :desc).first
 
-    # Логгирование текущих курсов для отладки
-    Rails.logger.debug "Текущий курс RUB: #{exchange_rate.rub}, VND: #{exchange_rate.vnd}, USDT: #{exchange_rate.usdt}"
+    # Rails.logger.debug "Текущий курс RUB: #{exchange_rate.rub}, VND: #{exchange_rate.vnd}, USDT: #{exchange_rate.usdt}"
 
     case [from_currency, to_currency]
     when ["RUB", "VND"]
