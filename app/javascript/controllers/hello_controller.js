@@ -114,8 +114,6 @@ export default class extends Controller {
       this.formTarget.requestSubmit();
       this.showPopup();
       this.amountInputTarget.value = "";
-    } else {
-      alert("Введите сумму для обмена");
     }
   }
 }
