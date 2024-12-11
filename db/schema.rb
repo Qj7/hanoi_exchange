@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_05_142752) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_01_024854) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -33,6 +33,13 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_05_142752) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.bigint "recipient_id"
+    t.bigint "exchanger_id"
+    t.integer "rating"
+    t.string "status"
+    t.string "comment"
+    t.index ["exchanger_id"], name: "index_orders_on_exchanger_id"
+    t.index ["recipient_id"], name: "index_orders_on_recipient_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
@@ -52,4 +59,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_05_142752) do
   end
 
   add_foreign_key "orders", "users"
+  add_foreign_key "orders", "users", column: "exchanger_id"
+  add_foreign_key "orders", "users", column: "recipient_id"
 end
