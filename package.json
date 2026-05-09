@@ -1,21 +1,28 @@
 {
-  "name": "app",
+  "name": "hanoi_exchange",
+  "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "@hotwired/stimulus": "^3.2.2",
-    "@hotwired/turbo-rails": "^8.0.12",
-    "autoprefixer": "^10.4.20",
-    "choices.js": "^10.1.0",
-    "esbuild": "^0.24.0",
-    "postcss": "^8.4.47",
-    "postcss-cli": "^11.0.0",
-    "postcss-import": "^16.1.0",
-    "postcss-nesting": "^13.0.1"
-  },
   "scripts": {
-    "build": "esbuild app/javascript/application.js --bundle --minify --analyze=verbose --sourcemap --outdir=app/assets/builds --public-path=assets",
-    "watch": "esbuild app/javascript/application.js --bundle --sourcemap --watch --outdir=app/assets/builds --public-path=assets",
-    "build:css": "postcss ./app/assets/stylesheets/application.postcss.css -o ./app/assets/builds/application.css",
-    "watch:css": "yarn build:css --watch"
+    "dev": "next dev",
+    "build": "next build",
+    "build:gh-pages": "NEXT_OUTPUT=export next build && touch out/.nojekyll",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

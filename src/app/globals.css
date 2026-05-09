@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0a0f1c;
+  --bg-elevated: #0f1626;
+  --bg-elevated-2: #131c30;
+  --border: #1e2a44;
+  --border-strong: #2a3a5c;
+  --text: #e6ebf5;
+  --text-muted: #8a99b8;
+  --text-dim: #5b6b8a;
+  --accent: #c9a96b;
+  --accent-hover: #d8b97a;
+  --accent-soft: rgba(201, 169, 107, 0.12);
+  --success: #2ec27e;
+  --danger: #e5484d;
+  --info: #5aa7ff;
+  --radius: 8px;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-muted: var(--text-muted);
+  --color-dim: var(--text-dim);
+  --color-card: var(--bg-elevated);
+  --color-card-2: var(--bg-elevated-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.01em;
+}
+
+body {
+  background-image:
+    radial-gradient(1200px 600px at 50% -20%, rgba(201, 169, 107, 0.06), transparent 60%),
+    radial-gradient(800px 400px at 100% 100%, rgba(90, 167, 255, 0.04), transparent 60%);
+  background-attachment: fixed;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.25s ease-out;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 0%,
+    var(--bg-elevated-2) 50%,
+    var(--bg-elevated) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
