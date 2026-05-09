@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(config.app.miniAppUrl),
   title: `${config.app.name} — обмен валют`,
   description:
-    "Профессиональный обмен валют RUB / THB / USD. Выгодный курс, безопасные сделки, поддержка 24/7.",
+    "Профессиональный обмен валют UAH / VND / USD. Выгодный курс, безопасные сделки, поддержка 24/7.",
   openGraph: {
     title: `${config.app.name} — обмен валют`,
     description: "Безопасный обмен валют через Telegram Mini App.",

@@ -15,8 +15,8 @@ import { ArrowRightIcon, SwapIcon } from "@/components/icons";
 import { useTelegram } from "@/lib/telegram/TelegramProvider";
 
 const MIN_AMOUNT: Record<CurrencyCode, number> = {
-  RUB: 5000,
-  THB: 1000,
+  UAH: 2000,
+  VND: 500000,
   USD: 50,
   USDT: 50,
 };
@@ -26,13 +26,13 @@ type Side = "give" | "receive";
 export function ExchangePage() {
   const { haptic, webApp } = useTelegram();
 
-  const [give, setGive] = useState<CurrencyCode>("RUB");
-  const [receive, setReceive] = useState<CurrencyCode>("THB");
+  const [give, setGive] = useState<CurrencyCode>("UAH");
+  const [receive, setReceive] = useState<CurrencyCode>("VND");
   const [pickerOpen, setPickerOpen] = useState<Side | null>(null);
   const [amountSide, setAmountSide] = useState<Side>("receive");
   const [amount, setAmount] = useState<string>("");
   const [payMethods, setPayMethods] = useState<string[]>([]);
-  const [receiveMethods, setReceiveMethods] = useState<string[]>([]);
+  const [receiveMethod, setReceiveMethod] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -64,7 +64,7 @@ export function ExchangePage() {
     setGive(receive);
     setReceive(give);
     setPayMethods([]);
-    setReceiveMethods([]);
+    setReceiveMethod("");
   };
 
   const togglePay = (id: string) => {
@@ -73,13 +73,6 @@ export function ExchangePage() {
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     );
   };
-  const toggleReceive = (id: string) => {
-    haptic("light");
-    setReceiveMethods((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
-  };
-
   const errors: string[] = [];
   if (give === receive) errors.push("Валюты не должны совпадать");
   if (!numericAmount) errors.push("Укажите сумму");
@@ -91,7 +84,7 @@ export function ExchangePage() {
     );
   if (!rate) errors.push("Обмен этой пары временно недоступен");
   if (payMethods.length === 0) errors.push("Выберите способ оплаты");
-  if (receiveMethods.length === 0) errors.push("Выберите способ получения");
+  if (!receiveMethod) errors.push("Выберите способ получения");
 
   const isValid = errors.length === 0;
 
@@ -217,11 +210,21 @@ export function ExchangePage() {
 
       <Card className="p-5 space-y-3">
         <Label>Способ получения</Label>
-        <PaymentMethodSelector
-          options={receiveOptions}
-          selectedIds={receiveMethods}
-          onToggle={toggleReceive}
-        />
+        <select
+          value={receiveMethod}
+          onChange={(e) => {
+            haptic("light");
+            setReceiveMethod(e.target.value);
+          }}
+          className="w-full h-11 bg-[var(--bg-elevated-2)] border border-[var(--border)] rounded-lg px-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+        >
+          <option value="">Выберите способ получения</option>
+          {receiveOptions.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
         <p className="text-[11px] text-[var(--text-dim)]">
           Другие способы получения откроются после первой сделки
         </p>
@@ -263,7 +266,7 @@ export function ExchangePage() {
             setPayMethods([]);
           } else {
             setReceive(code);
-            setReceiveMethods([]);
+            setReceiveMethod("");
           }
         }}
       />
