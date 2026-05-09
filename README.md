@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hanoi Exchange — Telegram Mini App
 
-## Getting Started
+Next.js + React приложение обменника для Telegram Mini App. Проект готов к деплою на GitHub Pages.
 
-First, run the development server:
+## Локально
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Обычный браузер покажет экран «откройте через Telegram». Внутри Telegram приложение читает пользователя из `window.Telegram.WebApp`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## GitHub Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Деплой запускается автоматически на push в `main`:
 
-## Learn More
+```bash
+git push origin main
+```
 
-To learn more about Next.js, take a look at the following resources:
+Workflow `.github/workflows/deploy.yml` собирает статический экспорт Next.js в `out/` и публикует его в GitHub Pages.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Telegram
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+В BotFather / настройках бота укажи URL Mini App:
 
-## Deploy on Vercel
+```text
+https://qj7.github.io/hanoi_exchange/
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Приложение проверяет, что запущено внутри Telegram, и берёт `chat_id` так:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```ts
+window.Telegram.WebApp.initDataUnsafe.user.id
+```
+
+Если `user.id` есть — пользователь считается авторизованным в Mini App. Если нет — показывается экран входа через Telegram.

@@ -2,9 +2,7 @@
 
 import { Logo } from "./Logo";
 import { TelegramIcon, ShieldIcon, ClockIcon, CheckIcon } from "./icons";
-
-const TELEGRAM_BOT_URL =
-  process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL ?? "https://t.me/HanoiExchangeBot";
+import { config } from "@/lib/config";
 
 export function WelcomeScreen() {
   return (
@@ -28,18 +26,21 @@ export function WelcomeScreen() {
           <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-8">
             Это приложение работает только внутри Telegram.
             <br />
-            Откройте бота, чтобы получить доступ к обмену.
+            Откройте Mini App из Telegram, чтобы получить доступ к обмену.
           </p>
 
           <a
-            href={TELEGRAM_BOT_URL}
+            href={config.app.miniAppUrl}
             target="_blank"
             rel="noreferrer"
             className="w-full flex items-center justify-center gap-2 h-12 rounded-lg bg-[var(--accent)] text-[#11151f] font-medium tracking-tight transition-colors hover:bg-[var(--accent-hover)]"
           >
             <TelegramIcon className="w-5 h-5" />
-            Открыть в Telegram
+            Открыть приложение
           </a>
+          <div className="mt-3 text-[11px] text-[var(--text-dim)] font-mono select-all break-all">
+            {config.app.miniAppUrl}
+          </div>
 
           <div className="mt-10 w-full grid gap-3 text-left">
             <FeatureRow

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CURRENCY_MAP,
   getRate,
@@ -46,18 +46,6 @@ export function ExchangePage() {
     [receive]
   );
 
-  // Reset selected methods if they no longer apply to the chosen currency
-  useEffect(() => {
-    setPayMethods((prev) =>
-      prev.filter((id) => payOptions.some((o) => o.id === id))
-    );
-  }, [payOptions]);
-  useEffect(() => {
-    setReceiveMethods((prev) =>
-      prev.filter((id) => receiveOptions.some((o) => o.id === id))
-    );
-  }, [receiveOptions]);
-
   const numericAmount = parseFloat(amount.replace(",", ".")) || 0;
   const min = amountSide === "give" ? MIN_AMOUNT[give] : MIN_AMOUNT[receive];
 
@@ -75,6 +63,8 @@ export function ExchangePage() {
     haptic("medium");
     setGive(receive);
     setReceive(give);
+    setPayMethods([]);
+    setReceiveMethods([]);
   };
 
   const togglePay = (id: string) => {
@@ -268,8 +258,13 @@ export function ExchangePage() {
         onClose={() => setPickerOpen(null)}
         onSelect={(code) => {
           haptic("light");
-          if (pickerOpen === "give") setGive(code);
-          else setReceive(code);
+          if (pickerOpen === "give") {
+            setGive(code);
+            setPayMethods([]);
+          } else {
+            setReceive(code);
+            setReceiveMethods([]);
+          }
         }}
       />
     </div>

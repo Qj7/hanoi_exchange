@@ -31,6 +31,13 @@ export interface TelegramWebApp {
   close: () => void;
   setHeaderColor: (color: string) => void;
   setBackgroundColor: (color: string) => void;
+  /** Available since Bot API 7.7. Prevents the WebView from collapsing on swipe-down. */
+  disableVerticalSwipes?: () => void;
+  /** Available since Bot API 7.7. */
+  enableVerticalSwipes?: () => void;
+  /** Available since Bot API 8.0. Confirms close with a native dialog. */
+  enableClosingConfirmation?: () => void;
+  disableClosingConfirmation?: () => void;
   HapticFeedback: {
     impactOccurred: (style: "light" | "medium" | "heavy" | "rigid" | "soft") => void;
     notificationOccurred: (type: "error" | "success" | "warning") => void;
