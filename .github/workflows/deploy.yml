@@ -1,64 +1,17 @@
-name: Deploy to GitHub Pages
+# Automatic GitHub Pages deploy was removed: static export (`output: "export"`)
+# is incompatible with Next.js Route Handlers (`src/app/api`). Production deploy
+# uses Vercel — see README.
+
+name: GitHub Pages (deprecated)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
-  build:
+  reminder:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Resolve Pages base path
-        id: base
+      - name: Deploy on Vercel instead
         run: |
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          echo "path=/${REPO_NAME}" >> "$GITHUB_OUTPUT"
-          echo "Using basePath=/${REPO_NAME}"
-
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build static export
-        env:
-          NEXT_BASE_PATH: ${{ steps.base.outputs.path }}
-          NEXT_PUBLIC_MINI_APP_URL: ${{ steps.pages.outputs.base_url }}
-        run: npm run build:gh-pages
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./out
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          echo "::notice title=Deploy::Connect this repo to Vercel — see README."
+          echo "Static export cannot coexist with src/app/api Route Handlers."

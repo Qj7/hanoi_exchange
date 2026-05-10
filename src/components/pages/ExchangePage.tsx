@@ -29,7 +29,7 @@ export function ExchangePage() {
   const [give, setGive] = useState<CurrencyCode>("UAH");
   const [receive, setReceive] = useState<CurrencyCode>("VND");
   const [pickerOpen, setPickerOpen] = useState<Side | null>(null);
-  const [amountSide, setAmountSide] = useState<Side>("receive");
+  const [amountSide] = useState<Side>("receive");
   const [amount, setAmount] = useState<string>("");
   const [payMethods, setPayMethods] = useState<string[]>([]);
   const [receiveMethod, setReceiveMethod] = useState<string>("");
@@ -149,24 +149,13 @@ export function ExchangePage() {
       </Card>
 
       <Card className="p-5 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <Label>
             Сумма в{" "}
             <span className="text-[var(--text)]">
               {amountSide === "give" ? give : receive}
             </span>
           </Label>
-          <button
-            type="button"
-            onClick={() => {
-              haptic("light");
-              setAmountSide((s) => (s === "give" ? "receive" : "give"));
-            }}
-            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[11px] font-medium border border-[var(--border-strong)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors"
-          >
-            <SwapIcon className="w-3 h-3" />
-            Считать в {amountSide === "give" ? receive : give}
-          </button>
         </div>
 
         <div className="flex items-stretch gap-2">

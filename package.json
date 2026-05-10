@@ -5,12 +5,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:gh-pages": "NEXT_OUTPUT=export next build && touch out/.nojekyll",
+    "build:static-legacy": "NEXT_OUTPUT=export next build && touch out/.nojekyll",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:backend": "tsx watch backend/server.ts",
+    "start:backend": "tsx backend/server.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.2",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
     "clsx": "^2.1.1",
+    "hono": "^4.12.18",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -23,6 +29,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
