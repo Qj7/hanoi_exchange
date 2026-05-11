@@ -1,0 +1,24 @@
+# Локальный PostgreSQL для заявок (альтернатива Supabase в dev).
+# Запуск: docker compose up -d
+# Строка подключения для Next.js (.env.local):
+# DATABASE_URL=postgresql://hanoi:hanoi_local@localhost:5432/hanoi_exchange
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: hanoi
+      POSTGRES_PASSWORD: hanoi_local
+      POSTGRES_DB: hanoi_exchange
+    volumes:
+      - hanoi_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hanoi -d hanoi_exchange"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  hanoi_pg_data:

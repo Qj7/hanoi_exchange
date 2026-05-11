@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { MIN_AMOUNT } from "@/lib/exchange/constants";
 import {
   CURRENCY_MAP,
   getRate,
   paymentOptionsFor,
   type CurrencyCode,
 } from "@/lib/exchange/data";
+import { formatMoney, formatNumber, formatRate } from "@/lib/exchange/format";
 import { Card } from "@/components/ui/Card";
 import { CurrencyButton } from "@/components/exchange/CurrencyButton";
 import { CurrencyPicker } from "@/components/exchange/CurrencyPicker";
@@ -14,17 +16,10 @@ import { PaymentMethodSelector } from "@/components/exchange/PaymentMethodSelect
 import { ArrowRightIcon, SwapIcon } from "@/components/icons";
 import { useTelegram } from "@/lib/telegram/TelegramProvider";
 
-const MIN_AMOUNT: Record<CurrencyCode, number> = {
-  UAH: 2000,
-  VND: 500000,
-  USD: 50,
-  USDT: 50,
-};
-
 type Side = "give" | "receive";
 
 export function ExchangePage() {
-  const { haptic, webApp } = useTelegram();
+  const { haptic, webApp, initData } = useTelegram();
 
   const [give, setGive] = useState<CurrencyCode>("UAH");
   const [receive, setReceive] = useState<CurrencyCode>("VND");
@@ -35,6 +30,8 @@ export function ExchangePage() {
   const [receiveMethod, setReceiveMethod] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const giveCurrency = CURRENCY_MAP[give];
   const receiveCurrency = CURRENCY_MAP[receive];
@@ -90,11 +87,39 @@ export function ExchangePage() {
 
   const handleSubmit = async () => {
     if (!isValid || submitting) return;
+    if (!initData) {
+      setSubmitError("Нет данных Telegram. Откройте приложение в Telegram.");
+      return;
+    }
     setSubmitting(true);
+    setSubmitError(null);
     haptic("heavy");
 
     try {
-      await new Promise((r) => setTimeout(r, 700));
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Telegram-Init-Data": initData,
+        },
+        body: JSON.stringify({
+          give_currency: give,
+          receive_currency: receive,
+          amount_side: amountSide,
+          amount_input: numericAmount,
+          pay_methods: payMethods,
+          receive_method: receiveMethod,
+        }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        id?: string;
+      };
+      if (!res.ok) {
+        setSubmitError(json.error ?? "Не удалось отправить заявку");
+        return;
+      }
+      setCreatedOrderId(typeof json.id === "string" ? json.id : null);
       setSuccess(true);
       haptic("rigid");
       try {
@@ -108,7 +133,15 @@ export function ExchangePage() {
   };
 
   if (success) {
-    return <SuccessScreen onClose={() => setSuccess(false)} />;
+    return (
+      <SuccessScreen
+        orderId={createdOrderId}
+        onClose={() => {
+          setSuccess(false);
+          setCreatedOrderId(null);
+        }}
+      />
+    );
   }
 
   return (
@@ -219,6 +252,10 @@ export function ExchangePage() {
         </p>
       </Card>
 
+      {submitError && (
+        <p className="text-[11px] text-[var(--danger)] px-1">{submitError}</p>
+      )}
+
       {errors.length > 0 && amount.length > 0 && (
         <ul className="text-[11px] text-[var(--danger)] space-y-1 px-1">
           {errors.map((e) => (
@@ -297,7 +334,16 @@ function RateBanner({
   );
 }
 
-function SuccessScreen({ onClose }: { onClose: () => void }) {
+function SuccessScreen({
+  orderId,
+  onClose,
+}: {
+  orderId: string | null;
+  onClose: () => void;
+}) {
+  const shortRef =
+    orderId && orderId.length >= 8 ? orderId.slice(0, 8).toUpperCase() : null;
+
   return (
     <div className="px-6 py-16 flex flex-col items-center text-center animate-fade-in-up">
       <div className="w-16 h-16 rounded-full bg-[var(--success)]/15 border border-[var(--success)]/40 flex items-center justify-center mb-5">
@@ -316,6 +362,11 @@ function SuccessScreen({ onClose }: { onClose: () => void }) {
       <h2 className="text-xl font-semibold tracking-tight mb-2">
         Заявка отправлена
       </h2>
+      {shortRef && (
+        <p className="text-xs font-mono text-[var(--accent)] mb-2">
+          № {shortRef}
+        </p>
+      )}
       <p className="text-sm text-[var(--text-muted)] max-w-xs leading-relaxed mb-7">
         Менеджер свяжется с вами в Telegram в течение 5 минут для подтверждения
         обмена.
@@ -329,20 +380,4 @@ function SuccessScreen({ onClose }: { onClose: () => void }) {
       </button>
     </div>
   );
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(value);
-}
-function formatMoney(value: number, code: CurrencyCode): string {
-  const fractionDigits = code === "USD" || code === "USDT" ? 2 : 0;
-  return `${new Intl.NumberFormat("ru-RU", {
-    maximumFractionDigits: fractionDigits,
-    minimumFractionDigits: fractionDigits,
-  }).format(value)} ${code}`;
-}
-function formatRate(value: number): string {
-  if (value >= 100) return value.toFixed(0);
-  if (value >= 10) return value.toFixed(2);
-  return value.toFixed(4);
 }

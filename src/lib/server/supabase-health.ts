@@ -12,6 +12,11 @@ export function getSupabaseServiceRoleKey(): string {
   return process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
 }
 
+/** True when server can talk to Supabase with the service role (writes / admin reads). */
+export function isSupabaseServiceConfigured(): boolean {
+  return Boolean(getSupabaseProjectUrl() && getSupabaseServiceRoleKey());
+}
+
 export type SupabaseHealthResult =
   | { ok: true }
   | { ok: false; error: string; httpStatus: 503 };

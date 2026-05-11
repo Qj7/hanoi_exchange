@@ -78,3 +78,8 @@ export function paymentOptionsFor(
     (o) => o.group === group && o.currencies.includes(currency)
   );
 }
+
+export function paymentOptionLabel(id: string): string {
+  const opt = PAYMENT_OPTIONS.find((o) => o.id === id);
+  return opt?.label ?? id;
+}
