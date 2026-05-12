@@ -8,6 +8,7 @@ import { requireAdminSession } from "@/lib/server/require-admin";
 import { paymentOptionLabel, type CurrencyCode } from "@/lib/exchange/data";
 import { formatMoney } from "@/lib/exchange/format";
 import { AdminLogoutButton } from "./AdminLogoutButton";
+import { AdminOrdersAutoRefresh } from "./AdminOrdersAutoRefresh";
 
 function asCurrency(x: string): CurrencyCode {
   if (x === "UAH" || x === "VND" || x === "USD" || x === "USDT") return x;
@@ -35,6 +36,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {!dbSkipped && !fetchError && <AdminOrdersAutoRefresh />}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Заявки</h1>
