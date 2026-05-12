@@ -22,98 +22,30 @@ type Props = {
   intervalMs?: number;
 };
 
-const LOG_PREFIX = "[hx-admin-orders]";
-
-function dbg(stage: string, payload?: Record<string, unknown>) {
-  if (typeof console === "undefined" || !console.info) return;
-  if (payload && Object.keys(payload).length > 0) {
-    console.info(LOG_PREFIX, stage, payload);
-  } else {
-    console.info(LOG_PREFIX, stage);
-  }
-}
-
-type PollTrigger = "mount" | "interval" | "visibility";
-
 export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
   const [rows, setRows] = useState<AdminOrderRow[]>(initialRows);
   const [pollError, setPollError] = useState<string | null>(null);
 
   useEffect(() => {
-    dbg("hydrate:initialRows", {
-      count: initialRows.length,
-      idsSample: initialRows.slice(0, 5).map((r) => r.id),
-    });
     setRows(initialRows);
   }, [initialRows]);
 
   useEffect(() => {
     let cancelled = false;
 
-    dbg("poll:effect_start", {
-      intervalMs,
-      url: "/api/admin/orders",
-      hint: "Ищи в консоли фильтром: hx-admin-orders",
-    });
-
-    const load = async (trigger: PollTrigger) => {
+    const load = async () => {
       if (typeof document !== "undefined" && document.visibilityState === "hidden") {
-        dbg("poll:skip_tab_hidden", { trigger });
         return;
       }
-
-      const started = performance.now();
-      dbg("poll:request", {
-        trigger,
-        visibilityState:
-          typeof document !== "undefined" ? document.visibilityState : "n/a",
-        credentials: "same-origin",
-        cache: "no-store",
-      });
-
       try {
         const res = await fetch("/api/admin/orders", {
           credentials: "same-origin",
           cache: "no-store",
         });
-        const text = await res.text();
-        const ms = Math.round(performance.now() - started);
-
-        let data: unknown = null;
-        let jsonError: string | null = null;
-        if (text.length > 0) {
-          try {
-            data = JSON.parse(text) as unknown;
-          } catch (e) {
-            jsonError = e instanceof Error ? e.message : String(e);
-          }
-        }
-
-        if (cancelled) {
-          dbg("poll:aborted_after_fetch", { trigger, ms, bytes: text.length });
-          return;
-        }
-
-        dbg("poll:http", {
-          trigger,
-          status: res.status,
-          ok: res.ok,
-          ms,
-          bytes: text.length,
-          contentType: res.headers.get("content-type"),
-          jsonParseError: jsonError,
-          bodyPreview: text.length > 800 ? `${text.slice(0, 800)}…` : text,
-        });
-
-        if (jsonError !== null) {
-          const msg = "Ответ не JSON";
-          setPollError(msg);
-          dbg("poll:fail_json", { trigger, jsonError, rawLength: text.length });
-          return;
-        }
+        const data: unknown = await res.json().catch(() => null);
+        if (cancelled) return;
 
         if (res.status === 401) {
-          dbg("poll:fail_unauthorized_redirect", { trigger, body: data });
           window.location.href = "/admin/login";
           return;
         }
@@ -127,7 +59,6 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
               ? (data as { error: string }).error
               : "Не удалось обновить список";
           setPollError(msg);
-          dbg("poll:fail_http", { trigger, status: res.status, message: msg, body: data });
           return;
         }
 
@@ -137,49 +68,25 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
           "orders" in data &&
           Array.isArray((data as { orders: unknown }).orders)
         ) {
-          const next = (data as { orders: AdminOrderRow[] }).orders;
           setPollError(null);
-          setRows(next);
-          dbg("poll:ok", {
-            trigger,
-            count: next.length,
-            idsHead: next.slice(0, 5).map((r) => r.id),
-            idsTail: next.length > 5 ? next.slice(-3).map((r) => r.id) : [],
-            ms,
-          });
+          setRows((data as { orders: AdminOrderRow[] }).orders);
         } else {
-          const keys =
-            data && typeof data === "object" && data !== null
-              ? Object.keys(data as object)
-              : [];
           setPollError("Некорректный ответ сервера");
-          dbg("poll:fail_shape", {
-            trigger,
-            typeofData: typeof data,
-            keys,
-            body: data,
-          });
         }
-      } catch (e) {
-        const err = e instanceof Error ? e.message : String(e);
-        const name = e instanceof Error ? e.name : "Error";
-        if (!cancelled) {
-          setPollError("Сеть недоступна");
-          dbg("poll:fail_network", { trigger, name, message: err });
-        }
+      } catch {
+        if (!cancelled) setPollError("Сеть недоступна");
       }
     };
 
-    const id = setInterval(() => void load("interval"), intervalMs);
+    const id = setInterval(() => void load(), intervalMs);
     const onVisible = () => {
-      if (document.visibilityState === "visible") void load("visibility");
+      if (document.visibilityState === "visible") void load();
     };
     document.addEventListener("visibilitychange", onVisible);
-    void load("mount");
+    void load();
 
     return () => {
       cancelled = true;
-      dbg("poll:effect_cleanup");
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
     };
