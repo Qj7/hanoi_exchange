@@ -1,35 +1,39 @@
 import { createClient } from "@supabase/supabase-js";
+import { getPublicSupabaseUrl } from "@/lib/supabase/env-public";
 
-export function getSupabaseProjectUrl(): string {
-  return (
-    process.env.SUPABASE_URL?.trim() ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
-    ""
-  );
+/** Server uses the same project URL as the client (`NEXT_PUBLIC_SUPABASE_URL`). */
+export function getSupabaseServerUrl(): string {
+  return getPublicSupabaseUrl();
 }
 
-export function getSupabaseServiceRoleKey(): string {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
+/** Server-only secret key (`sb_secret_…`). Full DB access; never expose to client. */
+export function getSupabaseSecretKey(): string {
+  return process.env.SUPABASE_SECRET_KEY?.trim() || "";
 }
 
-/** True when server can talk to Supabase with the service role (writes / admin reads). */
-export function isSupabaseServiceConfigured(): boolean {
-  return Boolean(getSupabaseProjectUrl() && getSupabaseServiceRoleKey());
+/** Server can run elevated queries (orders, admin list, health). */
+export function isSupabaseServerConfigured(): boolean {
+  return Boolean(getSupabaseServerUrl() && getSupabaseSecretKey());
+}
+
+/** Same as `isSupabaseServerConfigured` — заявки и админка читают БД только с сервера. */
+export function hasOrdersDatabase(): boolean {
+  return isSupabaseServerConfigured();
 }
 
 export type SupabaseHealthResult =
   | { ok: true }
   | { ok: false; error: string; httpStatus: 503 };
 
-/** Server-only check using the service role (bypasses RLS). */
+/** Server-only: checks DB via `app_config` using secret key. */
 export async function runSupabaseHealthCheck(): Promise<SupabaseHealthResult> {
-  const url = getSupabaseProjectUrl();
-  const key = getSupabaseServiceRoleKey();
+  const url = getSupabaseServerUrl();
+  const key = getSupabaseSecretKey();
   if (!url || !key) {
     return {
       ok: false,
       error:
-        "Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY for the API.",
+        "Задайте NEXT_PUBLIC_SUPABASE_URL и SUPABASE_SECRET_KEY.",
       httpStatus: 503 as const,
     };
   }

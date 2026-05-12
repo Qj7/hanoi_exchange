@@ -1,16 +1,16 @@
 import { createBrowserClient } from "@supabase/ssr";
+import {
+  getPublicSupabasePublishableKey,
+  getPublicSupabaseUrl,
+} from "@/lib/supabase/env-public";
 
-/**
- * Browser Supabase client (Mini App / client components).
- * Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
- */
 export function createSupabaseBrowserClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
+  const url = getPublicSupabaseUrl();
+  const key = getPublicSupabasePublishableKey();
+  if (!url || !key) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
     );
   }
-  return createBrowserClient(url, anonKey);
+  return createBrowserClient(url, key);
 }

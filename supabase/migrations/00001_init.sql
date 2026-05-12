@@ -16,6 +16,8 @@ on conflict (key) do nothing;
 alter table public.app_config enable row level security;
 
 -- Public read for Mini App (adjust when you store sensitive config).
+drop policy if exists "app_config_select_anon" on public.app_config;
+
 create policy "app_config_select_anon"
   on public.app_config
   for select

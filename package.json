@@ -8,9 +8,9 @@
     "build:static-legacy": "NEXT_OUTPUT=export next build && touch out/.nojekyll",
     "start": "next start",
     "lint": "eslint",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
-    "db:migrate": "docker compose exec -T postgres psql -U hanoi -d hanoi_exchange -v ON_ERROR_STOP=1 < supabase/migrations/00002_exchange_orders.sql",
+    "db:supabase:push": "supabase db push",
+    "db:supabase:pull": "supabase db pull",
+    "db:supabase:diff": "supabase db diff",
     "dev:backend": "tsx watch backend/server.ts",
     "start:backend": "tsx backend/server.ts"
   },
@@ -21,7 +21,6 @@
     "clsx": "^2.1.1",
     "hono": "^4.12.18",
     "next": "16.2.6",
-    "postgres": "^3.4.9",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

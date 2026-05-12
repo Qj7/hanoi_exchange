@@ -2,10 +2,21 @@ import { NextResponse } from "next/server";
 import {
   ADMIN_SESSION_COOKIE,
   adminCredentialsMatch,
+  isAdminEnvConfigured,
   signAdminSession,
 } from "@/lib/server/admin-session";
 
 export async function POST(request: Request) {
+  if (!isAdminEnvConfigured()) {
+    return NextResponse.json(
+      {
+        error:
+          "На сервере не заданы ADMIN_USERNAME, ADMIN_PASSWORD или ADMIN_SESSION_SECRET (≥16 символов). Проверь переменные окружения Production на Vercel и сделай Redeploy.",
+      },
+      { status: 503 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

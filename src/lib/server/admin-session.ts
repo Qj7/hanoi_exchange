@@ -46,6 +46,16 @@ export function verifyAdminSessionToken(token: string | undefined): boolean {
   }
 }
 
+/** Все три значения нужны для входа и cookie на проде. */
+export function isAdminEnvConfigured(): boolean {
+  const secret = process.env.ADMIN_SESSION_SECRET?.trim() ?? "";
+  return Boolean(
+    process.env.ADMIN_USERNAME?.trim() &&
+      process.env.ADMIN_PASSWORD?.trim() &&
+      secret.length >= 16
+  );
+}
+
 export function adminCredentialsMatch(username: string, password: string): boolean {
   const u = process.env.ADMIN_USERNAME?.trim();
   const p = process.env.ADMIN_PASSWORD?.trim();

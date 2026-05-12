@@ -2,24 +2,21 @@
 
 Next.js + React приложение обменника для Telegram Mini App.
 
+**Пошаговая настройка Supabase + Vercel + Telegram + переменные:** см. **[DEPLOY.md](./DEPLOY.md)**.
+
 ## Деплой на Vercel (основной)
 
 1. Импортируй репозиторий в [Vercel](https://vercel.com/) (Framework Preset: **Next.js**).
-2. В **Settings → Environment Variables** добавь те же переменные, что в `.env.example`:
-   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — из Supabase **Settings → API**.
-   - `SUPABASE_URL` — обычно тот же URL, что и `NEXT_PUBLIC_SUPABASE_URL` (не публикуй service role в клиент).
-   - `SUPABASE_SERVICE_ROLE_KEY` — только для сервера; нужен для `GET /api/supabase/health` и (если нет `DATABASE_URL`) для заявок и админки.
-   - `DATABASE_URL` — опционально: прямое подключение к PostgreSQL (например Docker на машине разработчика). Если задано, заявки сохраняются **в этот Postgres вперёд Supabase**.
+2. В **Settings → Environment Variables** добавь переменные из **DEPLOY.md** (раздел 3), в частности:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` — Supabase **Settings → API Keys**.
    - `TELEGRAM_BOT_TOKEN` — токен бота из BotFather; сервер им [проверяет](https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app) `initData` при создании заявки и в истории.
-   - `ADMIN_USERNAME`, `ADMIN_PASSWORD` — логин и пароль для `/admin` (только сервер; задай тестовые значения и смени в проде).
-   - `ADMIN_SESSION_SECRET` — секрет ≥ 16 символов для подписи httpOnly-cookie админской сессии.
-   - `NEXT_PUBLIC_MINI_APP_URL` — канонический URL Mini App (например `https://<проект>.vercel.app` или свой домен).
+   - `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (≥16), `NEXT_PUBLIC_MINI_APP_URL`.
 3. Сборка: **`next build`** (по умолчанию). **Не** выставляй `NEXT_OUTPUT=export` на Vercel — иначе сломается деплой с Route Handlers.
 
 Минимальные HTTP-эндпоинты на том же домене, что и приложение:
 
 - `GET /api/health`
-- `GET /api/supabase/health` (проверка БД через service role)
+- `GET /api/supabase/health` (проверка БД через `SUPABASE_SECRET_KEY`)
 - `POST /api/orders` / `GET /api/orders` — заявки (заголовок `X-Telegram-Init-Data`, данные заявки валидируются на сервере)
 - `POST /api/admin/login` / `POST /api/admin/logout` — вход в админку
 - Веб-интерфейс: `/admin` (после логина), `/admin/login`
@@ -61,25 +58,12 @@ window.Telegram.WebApp.initDataUnsafe.user.id
 
 Если `user.id` есть — пользователь считается авторизованным в Mini App. Если нет — показывается экран входа через Telegram.
 
-## Локальный Postgres (Docker)
-
-Заявки можно хранить без Supabase: PostgreSQL в контейнере и переменная `DATABASE_URL`.
-
-1. Запусти контейнер: `npm run docker:up` (или `docker compose up -d`).
-2. Примени миграцию таблицы заявок: `npm run db:migrate` (нужен запущенный Postgres из compose).
-3. В `.env.local` добавь, например:
-   `DATABASE_URL=postgresql://hanoi:hanoi_local@localhost:5432/hanoi_exchange`
-
-Учётные данные и имя БД по умолчанию совпадают с `docker-compose.yml`. Если заданы и `DATABASE_URL`, и ключи Supabase, используется **локальный Postgres**.
-
-На Windows при необходимости выполни SQL из `supabase/migrations/00002_exchange_orders.sql` через клиент `psql` или UI вручную.
-
 ## Supabase
 
-1. Создай проект в [Supabase](https://supabase.com/), открой **Settings → API** и скопируй URL и ключи.
-2. Выполни SQL из `supabase/migrations/` по порядку (`00001_init.sql`, затем `00002_exchange_orders.sql`) в **SQL Editor**.
-3. Скопируй `.env.example` в `.env.local` и заполни переменные.
+1. Проект в [Supabase](https://supabase.com/), **Settings → API Keys** — URL, publishable, secret (см. **DEPLOY.md**).
+2. Миграции: **SQL Editor** по файлам `supabase/migrations/00001_init.sql`, `00002_exchange_orders.sql`, либо **`npm run db:supabase:push`** после `supabase link`.
+3. Переменные в `.env.local` (локально) и на Vercel — см. **DEPLOY.md**.
 
-**Фронт (Mini App):** `src/lib/supabase/client.ts` — `createSupabaseBrowserClient()` для клиентских компонентов.
+**Клиент:** `src/lib/supabase/client.ts` — `createSupabaseBrowserClient()`.
 
-**Сервер Next (Vercel / `next dev`):** `src/lib/supabase/server.ts` — для Server Components и серверных вызовов с cookie-сессией Supabase.
+**Сервер (cookie-сессия Supabase):** `src/lib/supabase/server.ts`.

@@ -1,7 +1,5 @@
-import { isSupabaseServiceConfigured } from "@/lib/server/supabase-health";
 import { createSupabaseServiceClient } from "@/lib/server/supabase-service";
-import { isLocalPostgresConfigured } from "@/lib/server/database-config";
-import { getLocalPostgres } from "@/lib/server/pg-local";
+import { isSupabaseServerConfigured } from "@/lib/server/supabase-health";
 import type { CreateOrderPayload } from "@/lib/server/validate-create-order";
 import type { TelegramWebAppUser } from "@/lib/server/telegram-web-app";
 
@@ -24,65 +22,15 @@ export type AdminOrderRow = OrderListItem & {
   telegram_first_name: string | null;
 };
 
-function preferLocalPostgres(): boolean {
-  return isLocalPostgresConfigured();
-}
-
 export async function insertExchangeOrder(
   user: TelegramWebAppUser,
   payload: CreateOrderPayload
 ): Promise<{ ok: true; id: string } | { ok: false; message: string }> {
-  if (preferLocalPostgres()) {
-    const sql = getLocalPostgres();
-    if (!sql) {
-      return { ok: false, message: "DATABASE_URL не доступен" };
-    }
-    try {
-      const rows = await sql<{ id: string }[]>`
-        insert into exchange_orders (
-          telegram_user_id,
-          telegram_username,
-          telegram_first_name,
-          give_currency,
-          receive_currency,
-          amount_side,
-          amount_input,
-          give_amount,
-          receive_amount,
-          rate,
-          pay_methods,
-          receive_method,
-          status
-        ) values (
-          ${user.id},
-          ${user.username ?? null},
-          ${user.first_name ?? null},
-          ${payload.give_currency},
-          ${payload.receive_currency},
-          ${payload.amount_side},
-          ${payload.amount_input},
-          ${payload.give_amount},
-          ${payload.receive_amount},
-          ${payload.rate},
-          ${sql.array(payload.pay_methods)},
-          ${payload.receive_method},
-          'pending'
-        )
-        returning id
-      `;
-      const id = rows[0]?.id;
-      if (!id) return { ok: false, message: "Не удалось сохранить заявку" };
-      return { ok: true, id };
-    } catch {
-      return { ok: false, message: "Не удалось сохранить заявку" };
-    }
-  }
-
-  if (!isSupabaseServiceConfigured()) {
+  if (!isSupabaseServerConfigured()) {
     return {
       ok: false,
       message:
-        "Нет базы данных: задайте DATABASE_URL (локальный Postgres) или Supabase.",
+        "Supabase не настроен: нужны NEXT_PUBLIC_SUPABASE_URL и SUPABASE_SECRET_KEY.",
     };
   }
 
@@ -120,34 +68,7 @@ export async function insertExchangeOrder(
 export async function listOrdersForUser(
   telegramUserId: number
 ): Promise<OrderListItem[] | { error: string }> {
-  if (preferLocalPostgres()) {
-    const sql = getLocalPostgres();
-    if (!sql) return { error: "DATABASE_URL не доступен" };
-    try {
-      const rows = await sql<OrderListItem[]>`
-        select
-          id,
-          created_at::text,
-          give_currency,
-          receive_currency,
-          give_amount,
-          receive_amount,
-          status,
-          pay_methods,
-          receive_method,
-          rate
-        from exchange_orders
-        where telegram_user_id = ${telegramUserId}
-        order by created_at desc
-        limit 100
-      `;
-      return rows;
-    } catch {
-      return { error: "Не удалось загрузить историю" };
-    }
-  }
-
-  if (!isSupabaseServiceConfigured()) {
+  if (!isSupabaseServerConfigured()) {
     return [];
   }
 
@@ -172,35 +93,7 @@ export async function listOrdersForUser(
 export async function listAllOrdersForAdmin(): Promise<
   AdminOrderRow[] | { error: string }
 > {
-  if (preferLocalPostgres()) {
-    const sql = getLocalPostgres();
-    if (!sql) return { error: "DATABASE_URL не доступен" };
-    try {
-      const rows = await sql<AdminOrderRow[]>`
-        select
-          id,
-          created_at::text,
-          telegram_user_id,
-          telegram_username,
-          telegram_first_name,
-          give_currency,
-          receive_currency,
-          give_amount,
-          receive_amount,
-          status,
-          pay_methods,
-          receive_method
-        from exchange_orders
-        order by created_at desc
-        limit 300
-      `;
-      return rows;
-    } catch {
-      return { error: "Не удалось загрузить заявки" };
-    }
-  }
-
-  if (!isSupabaseServiceConfigured()) {
+  if (!isSupabaseServerConfigured()) {
     return [];
   }
 

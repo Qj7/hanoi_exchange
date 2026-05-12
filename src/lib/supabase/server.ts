@@ -1,22 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import {
+  getPublicSupabasePublishableKey,
+  getPublicSupabaseUrl,
+} from "@/lib/supabase/env-public";
 
-/**
- * Server Supabase client (cookies, RLS as user). Use when the app runs with a
- * Node server — not with `output: "export"` / GitHub Pages static hosting.
- */
 export async function createSupabaseServerClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
+  const url = getPublicSupabaseUrl();
+  const key = getPublicSupabasePublishableKey();
+  if (!url || !key) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
     );
   }
 
   const cookieStore = await cookies();
 
-  return createServerClient(url, anonKey, {
+  return createServerClient(url, key, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -27,7 +27,7 @@ export async function createSupabaseServerClient() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // Called from a Server Component where cookies are read-only.
+          // Server Component: cookies read-only.
         }
       },
     },

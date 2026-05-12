@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { hasOrdersDatabase } from "@/lib/server/database-config";
+import { hasOrdersDatabase } from "@/lib/server/supabase-health";
 import {
   listAllOrdersForAdmin,
   type AdminOrderRow,
@@ -55,15 +55,24 @@ export default async function AdminDashboardPage() {
 
       {dbSkipped && (
         <p className="text-sm text-[var(--info)] mb-6 leading-relaxed max-w-xl">
-          База не подключена. Локально:{" "}
+          Supabase для сервера не настроен. В{" "}
           <code className="font-mono text-xs text-[var(--text-muted)]">
-            docker compose up -d
-          </code>
-          , затем{" "}
-          <code className="font-mono text-xs text-[var(--text-muted)]">
-            DATABASE_URL
+            .env.local
           </code>{" "}
-          и миграция таблицы заявок (см. README). Либо прод: переменные Supabase.
+          или на хостинге задай{" "}
+          <code className="font-mono text-xs text-[var(--text-muted)]">
+            NEXT_PUBLIC_SUPABASE_URL
+          </code>
+          ,{" "}
+          <code className="font-mono text-xs text-[var(--text-muted)]">
+            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+          </code>
+          ,{" "}
+          <code className="font-mono text-xs text-[var(--text-muted)]">
+            SUPABASE_SECRET_KEY
+          </code>
+          . См.{" "}
+          <code className="font-mono text-xs">DEPLOY.md</code>.
         </p>
       )}
 

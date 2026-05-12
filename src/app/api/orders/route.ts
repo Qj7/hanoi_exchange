@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { hasOrdersDatabase } from "@/lib/server/database-config";
+import { hasOrdersDatabase } from "@/lib/server/supabase-health";
 import {
   insertExchangeOrder,
   listOrdersForUser,
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "База не настроена: задайте DATABASE_URL (Docker Postgres) или Supabase.",
+          "Supabase не настроен: NEXT_PUBLIC_SUPABASE_URL и SUPABASE_SECRET_KEY (см. DEPLOY.md).",
       },
       { status: 503 }
     );
