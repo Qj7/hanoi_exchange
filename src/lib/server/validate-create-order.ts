@@ -85,7 +85,7 @@ export function validateCreateOrderBody(
     receiveAmount = numeric * rate;
   }
 
-  if (!Array.isArray(payMethods) || payMethods.length === 0) {
+  if (!Array.isArray(payMethods) || payMethods.length !== 1) {
     return { ok: false, message: "Выберите способ оплаты" };
   }
   const allowedGive = new Set(

@@ -12,7 +12,6 @@ import { formatMoney, formatNumber, formatRate } from "@/lib/exchange/format";
 import { Card } from "@/components/ui/Card";
 import { CurrencyButton } from "@/components/exchange/CurrencyButton";
 import { CurrencyPicker } from "@/components/exchange/CurrencyPicker";
-import { PaymentMethodSelector } from "@/components/exchange/PaymentMethodSelector";
 import { ArrowRightIcon, SwapIcon } from "@/components/icons";
 import { useTelegram } from "@/lib/telegram/TelegramProvider";
 
@@ -26,7 +25,7 @@ export function ExchangePage() {
   const [pickerOpen, setPickerOpen] = useState<Side | null>(null);
   const [amountSide] = useState<Side>("receive");
   const [amount, setAmount] = useState<string>("");
-  const [payMethods, setPayMethods] = useState<string[]>([]);
+  const [payMethod, setPayMethod] = useState<string>("");
   const [receiveMethod, setReceiveMethod] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -60,16 +59,10 @@ export function ExchangePage() {
     haptic("medium");
     setGive(receive);
     setReceive(give);
-    setPayMethods([]);
+    setPayMethod("");
     setReceiveMethod("");
   };
 
-  const togglePay = (id: string) => {
-    haptic("light");
-    setPayMethods((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
-  };
   const errors: string[] = [];
   if (give === receive) errors.push("Валюты не должны совпадать");
   if (!numericAmount) errors.push("Укажите сумму");
@@ -80,7 +73,7 @@ export function ExchangePage() {
       }`
     );
   if (!rate) errors.push("Обмен этой пары временно недоступен");
-  if (payMethods.length === 0) errors.push("Выберите способ оплаты");
+  if (!payMethod) errors.push("Выберите способ оплаты");
   if (!receiveMethod) errors.push("Выберите способ получения");
 
   const isValid = errors.length === 0;
@@ -107,7 +100,7 @@ export function ExchangePage() {
           receive_currency: receive,
           amount_side: amountSide,
           amount_input: numericAmount,
-          pay_methods: payMethods,
+          pay_methods: payMethod ? [payMethod] : [],
           receive_method: receiveMethod,
         }),
       });
@@ -223,11 +216,21 @@ export function ExchangePage() {
 
       <Card className="p-5 space-y-3">
         <Label>Способ оплаты</Label>
-        <PaymentMethodSelector
-          options={payOptions}
-          selectedIds={payMethods}
-          onToggle={togglePay}
-        />
+        <select
+          value={payMethod}
+          onChange={(e) => {
+            haptic("light");
+            setPayMethod(e.target.value);
+          }}
+          className="w-full h-11 bg-[var(--bg-elevated-2)] border border-[var(--border)] rounded-lg px-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+        >
+          <option value="">Выберите способ оплаты</option>
+          {payOptions.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </Card>
 
       <Card className="p-5 space-y-3">
@@ -289,7 +292,7 @@ export function ExchangePage() {
           haptic("light");
           if (pickerOpen === "give") {
             setGive(code);
-            setPayMethods([]);
+            setPayMethod("");
           } else {
             setReceive(code);
             setReceiveMethod("");
