@@ -16,6 +16,19 @@ function num(v: string | number): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Ссылка на чат с пользователем в клиенте Telegram (Mini App / бот). */
+function telegramChatHref(
+  telegramUserId: number,
+  username: string | null | undefined
+): string {
+  const raw = username?.trim();
+  if (raw) {
+    const clean = raw.replace(/^@/, "");
+    if (clean) return `https://t.me/${encodeURIComponent(clean)}`;
+  }
+  return `tg://user?id=${telegramUserId}`;
+}
+
 type Props = {
   initialRows: AdminOrderRow[];
   /** Интервал опроса (мс). */
@@ -25,10 +38,6 @@ type Props = {
 export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
   const [rows, setRows] = useState<AdminOrderRow[]>(initialRows);
   const [pollError, setPollError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setRows(initialRows);
-  }, [initialRows]);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,12 +137,14 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
                 : r.created_at;
               const ga = num(r.give_amount);
               const ra = num(r.receive_amount);
-              const tg =
+              const tgLabel =
                 r.telegram_username != null && r.telegram_username !== ""
                   ? `@${r.telegram_username}`
                   : r.telegram_first_name != null
                     ? r.telegram_first_name
                     : String(r.telegram_user_id);
+              const tgHref = telegramChatHref(r.telegram_user_id, r.telegram_username);
+              const tgLinkIsHttps = tgHref.startsWith("https:");
               const methods = [
                 ...r.pay_methods.map(paymentOptionLabel),
                 paymentOptionLabel(r.receive_method),
@@ -147,8 +158,16 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
                   <td className="px-3 py-2.5 font-mono text-xs whitespace-nowrap">
                     {dateStr}
                   </td>
-                  <td className="px-3 py-2.5 text-xs max-w-[140px] truncate">
-                    {tg}
+                  <td className="px-3 py-2.5 text-xs max-w-[160px] truncate">
+                    <a
+                      href={tgHref}
+                      className="text-[var(--accent)] hover:underline"
+                      {...(tgLinkIsHttps
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : { rel: "noreferrer" })}
+                    >
+                      {tgLabel}
+                    </a>
                   </td>
                   <td className="px-3 py-2.5 font-mono text-xs whitespace-nowrap">
                     {r.give_currency} → {r.receive_currency}
