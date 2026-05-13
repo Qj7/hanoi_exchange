@@ -37,10 +37,10 @@ interface ApiOrder {
 }
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
-  completed: "Завершено",
+  completed: "Выполнена",
   pending: "В очереди",
   in_progress: "В работе",
-  cancelled: "Отменено",
+  cancelled: "Отменена",
 };
 
 const STATUS_STYLE: Record<OrderStatus, string> = {
@@ -63,6 +63,8 @@ function num(v: string | number): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+const POLL_INTERVAL_MS = 5000;
+
 export function HistoryPage() {
   const { initData } = useTelegram();
   const [orders, setOrders] = useState<ApiOrder[]>([]);
@@ -72,45 +74,77 @@ export function HistoryPage() {
 
   useEffect(() => {
     let cancelled = false;
+    let isInitial = true;
 
-    async function load() {
+    async function load({ silent }: { silent: boolean }) {
       if (!initData) {
+        if (cancelled) return;
         setOrders([]);
         setLoading(false);
         setError(null);
         return;
       }
 
-      setLoading(true);
-      setError(null);
+      if (
+        silent &&
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
+
+      if (!silent) setLoading(true);
+
       try {
         const res = await fetch("/api/orders", {
           headers: { "X-Telegram-Init-Data": initData },
+          cache: "no-store",
         });
-        const json = (await res.json()) as {
+        const json = (await res.json().catch(() => ({}))) as {
           orders?: ApiOrder[];
           error?: string;
         };
         if (cancelled) return;
         if (!res.ok) {
-          setError(json.error ?? "Не удалось загрузить историю");
-          setOrders([]);
+          if (!silent) {
+            setError(json.error ?? "Не удалось загрузить историю");
+            setOrders([]);
+          }
           return;
         }
+        setError(null);
         setOrders(Array.isArray(json.orders) ? json.orders : []);
       } catch {
-        if (!cancelled) {
+        if (cancelled) return;
+        if (!silent) {
           setError("Ошибка сети");
           setOrders([]);
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && !silent) setLoading(false);
       }
     }
 
-    void load();
+    void load({ silent: false }).then(() => {
+      isInitial = false;
+    });
+
+    const intervalId = setInterval(() => {
+      if (isInitial) return;
+      void load({ silent: true });
+    }, POLL_INTERVAL_MS);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && !isInitial) {
+        void load({ silent: true });
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [initData, retryKey]);
 
