@@ -250,9 +250,6 @@ export function ExchangePage() {
             </option>
           ))}
         </select>
-        <p className="text-[11px] text-[var(--text-dim)]">
-          Другие способы получения откроются после первой сделки
-        </p>
       </Card>
 
       {submitError && (
