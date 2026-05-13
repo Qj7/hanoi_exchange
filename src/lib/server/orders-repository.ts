@@ -22,6 +22,44 @@ export type AdminOrderRow = OrderListItem & {
   telegram_first_name: string | null;
 };
 
+export type AdminOrderStatusAction = "in_progress" | "completed";
+
+export async function adminTransitionOrderStatus(
+  orderId: string,
+  target: AdminOrderStatusAction
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!isSupabaseServerConfigured()) {
+    return { ok: false, error: "База данных не настроена" };
+  }
+
+  const fromStatus = target === "in_progress" ? "pending" : "in_progress";
+
+  try {
+    const supabase = createSupabaseServiceClient();
+    const { data, error } = await supabase
+      .from("exchange_orders")
+      .update({ status: target })
+      .eq("id", orderId)
+      .eq("status", fromStatus)
+      .select("id")
+      .maybeSingle();
+
+    if (error) return { ok: false, error: error.message };
+    if (!data?.id) {
+      return {
+        ok: false,
+        error:
+          target === "in_progress"
+            ? "Взять в работу можно только заявку в очереди"
+            : "Завершить можно только заявку в работе",
+      };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Не удалось обновить статус" };
+  }
+}
+
 export async function insertExchangeOrder(
   user: TelegramWebAppUser,
   payload: CreateOrderPayload

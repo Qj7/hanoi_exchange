@@ -10,10 +10,17 @@ import {
 import { formatMoney } from "@/lib/exchange/format";
 import { useTelegram } from "@/lib/telegram/TelegramProvider";
 
-type OrderStatus = "completed" | "pending" | "cancelled";
+type OrderStatus = "completed" | "pending" | "in_progress" | "cancelled";
 
 function normalizeStatus(s: string): OrderStatus {
-  if (s === "completed" || s === "pending" || s === "cancelled") return s;
+  if (
+    s === "completed" ||
+    s === "pending" ||
+    s === "in_progress" ||
+    s === "cancelled"
+  ) {
+    return s;
+  }
   return "pending";
 }
 
@@ -31,7 +38,8 @@ interface ApiOrder {
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   completed: "Завершено",
-  pending: "В обработке",
+  pending: "В очереди",
+  in_progress: "В работе",
   cancelled: "Отменено",
 };
 
@@ -39,6 +47,8 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
   completed:
     "text-[var(--success)] bg-[var(--success)]/10 border-[var(--success)]/30",
   pending: "text-[var(--info)] bg-[var(--info)]/10 border-[var(--info)]/30",
+  in_progress:
+    "text-[var(--accent)] bg-[var(--accent-soft)] border-[var(--accent)]/35",
   cancelled:
     "text-[var(--danger)] bg-[var(--danger)]/10 border-[var(--danger)]/30",
 };

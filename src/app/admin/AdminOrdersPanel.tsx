@@ -16,6 +16,21 @@ function num(v: string | number): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function adminStatusLabel(status: string): string {
+  switch (status) {
+    case "pending":
+      return "В очереди";
+    case "in_progress":
+      return "В работе";
+    case "completed":
+      return "Завершено";
+    case "cancelled":
+      return "Отменено";
+    default:
+      return status;
+  }
+}
+
 /** Ссылка на чат с пользователем в клиенте Telegram (Mini App / бот). */
 function telegramChatHref(
   telegramUserId: number,
@@ -38,6 +53,50 @@ type Props = {
 export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
   const [rows, setRows] = useState<AdminOrderRow[]>(initialRows);
   const [pollError, setPollError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busyOrderId, setBusyOrderId] = useState<string | null>(null);
+
+  const patchOrderStatus = async (
+    orderId: string,
+    status: "in_progress" | "completed"
+  ) => {
+    setActionError(null);
+    setBusyOrderId(orderId);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const data: unknown = await res.json().catch(() => null);
+
+      if (res.status === 401) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      if (!res.ok) {
+        const msg =
+          data &&
+          typeof data === "object" &&
+          "error" in data &&
+          typeof (data as { error: unknown }).error === "string"
+            ? (data as { error: string }).error
+            : "Не удалось обновить статус";
+        setActionError(msg);
+        return;
+      }
+
+      setRows((prev) =>
+        prev.map((r) => (r.id === orderId ? { ...r, status } : r))
+      );
+    } catch {
+      setActionError("Сеть недоступна");
+    } finally {
+      setBusyOrderId(null);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -107,6 +166,9 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
         {pollError && (
           <p className="text-sm text-[var(--danger)]">{pollError}</p>
         )}
+        {actionError && (
+          <p className="text-sm text-[var(--danger)]">{actionError}</p>
+        )}
         <p className="text-sm text-[var(--text-muted)]">Пока нет заявок.</p>
       </div>
     );
@@ -116,6 +178,9 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
     <div className="space-y-2">
       {pollError && (
         <p className="text-sm text-[var(--danger)]">{pollError}</p>
+      )}
+      {actionError && (
+        <p className="text-sm text-[var(--danger)]">{actionError}</p>
       )}
       <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
         <table className="w-full text-left text-sm">
@@ -127,6 +192,7 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
               <th className="px-3 py-2 font-medium">Суммы</th>
               <th className="px-3 py-2 font-medium">Способы</th>
               <th className="px-3 py-2 font-medium">Статус</th>
+              <th className="px-3 py-2 font-medium">Действия</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
@@ -180,7 +246,37 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
                   <td className="px-3 py-2.5 text-xs text-[var(--text-muted)] max-w-[220px]">
                     {methods}
                   </td>
-                  <td className="px-3 py-2.5 text-xs">{r.status}</td>
+                  <td className="px-3 py-2.5 text-xs">
+                    {adminStatusLabel(r.status)}
+                  </td>
+                  <td className="px-3 py-2.5 text-xs whitespace-nowrap">
+                    {r.status === "pending" && (
+                      <button
+                        type="button"
+                        disabled={busyOrderId === r.id}
+                        onClick={() => void patchOrderStatus(r.id, "in_progress")}
+                        className="px-2.5 py-1 rounded-md border border-[var(--border-strong)] text-[var(--text-muted)] hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-50 transition-colors"
+                      >
+                        {busyOrderId === r.id ? "…" : "Взять в работу"}
+                      </button>
+                    )}
+                    {r.status === "in_progress" && (
+                      <button
+                        type="button"
+                        disabled={busyOrderId === r.id}
+                        onClick={() => void patchOrderStatus(r.id, "completed")}
+                        className="px-2.5 py-1 rounded-md border border-[var(--success)]/50 text-[var(--success)] hover:bg-[var(--success)]/10 disabled:opacity-50 transition-colors"
+                      >
+                        {busyOrderId === r.id ? "…" : "Завершить"}
+                      </button>
+                    )}
+                    {(r.status === "completed" ||
+                      r.status === "cancelled" ||
+                      (r.status !== "pending" &&
+                        r.status !== "in_progress")) && (
+                      <span className="text-[var(--text-dim)]">—</span>
+                    )}
+                  </td>
                 </tr>
               );
             })}
