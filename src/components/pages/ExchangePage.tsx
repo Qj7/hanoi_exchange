@@ -214,8 +214,10 @@ export function ExchangePage() {
         )}
       </Card>
 
-      <Card className="p-5 space-y-3">
-        <Label>Способ оплаты</Label>
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center">
+          <Label>Способ оплаты</Label>
+        </div>
         <select
           value={payMethod}
           onChange={(e) => {
@@ -233,8 +235,10 @@ export function ExchangePage() {
         </select>
       </Card>
 
-      <Card className="p-5 space-y-3">
-        <Label>Способ получения</Label>
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center">
+          <Label>Способ получения</Label>
+        </div>
         <select
           value={receiveMethod}
           onChange={(e) => {
