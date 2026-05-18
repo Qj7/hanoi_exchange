@@ -31,6 +31,7 @@ export function ExchangePage() {
   const [success, setSuccess] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const { getRate, loading: ratesLoading, error: ratesError } =
     useExchangeRates();
@@ -66,24 +67,32 @@ export function ExchangePage() {
     setReceiveMethod("");
   };
 
-  const errors: string[] = [];
-  if (give === receive) errors.push("Валюты не должны совпадать");
-  if (!numericAmount) errors.push("Укажите сумму");
+  const fieldErrors: string[] = [];
+  if (give === receive) fieldErrors.push("Валюты не должны совпадать");
+  if (!numericAmount) fieldErrors.push("Укажите сумму");
   else if (numericAmount < min)
-    errors.push(
+    fieldErrors.push(
       `Минимальная сумма: ${formatNumber(min)} ${
         amountSide === "give" ? give : receive
       }`
     );
-  if (ratesLoading) errors.push("Загрузка курса…");
-  else if (ratesError) errors.push(ratesError);
-  else if (!rate) errors.push("Обмен этой пары временно недоступен");
-  if (!payMethod) errors.push("Выберите способ оплаты");
-  if (!receiveMethod) errors.push("Выберите способ получения");
+  if (ratesLoading) fieldErrors.push("Загрузка курса…");
+  else if (ratesError) fieldErrors.push(ratesError);
+  else if (!rate) fieldErrors.push("Обмен этой пары временно недоступен");
 
-  const isValid = errors.length === 0;
+  const methodErrors: string[] = [];
+  if (!payMethod) methodErrors.push("Выберите способ оплаты");
+  if (!receiveMethod) methodErrors.push("Выберите способ получения");
+
+  const isValid = fieldErrors.length === 0 && methodErrors.length === 0;
+
+  const displayErrors = [
+    ...(amount.length > 0 || submitAttempted ? fieldErrors : []),
+    ...(submitAttempted ? methodErrors : []),
+  ];
 
   const handleSubmit = async () => {
+    setSubmitAttempted(true);
     if (!isValid || submitting) return;
     if (!initData) {
       setSubmitError("Нет данных Telegram. Откройте приложение в Telegram.");
@@ -267,9 +276,9 @@ export function ExchangePage() {
         <p className="text-[11px] text-[var(--danger)] px-1">{submitError}</p>
       )}
 
-      {errors.length > 0 && amount.length > 0 && (
+      {displayErrors.length > 0 && (
         <ul className="text-[11px] text-[var(--danger)] space-y-1 px-1">
-          {errors.map((e) => (
+          {displayErrors.map((e) => (
             <li key={e}>· {e}</li>
           ))}
         </ul>
@@ -277,7 +286,7 @@ export function ExchangePage() {
 
       <button
         type="button"
-        disabled={!isValid || submitting}
+        disabled={fieldErrors.length > 0 || submitting}
         onClick={handleSubmit}
         className="w-full h-12 rounded-lg bg-[var(--accent)] text-[#11151f] font-semibold tracking-tight flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--accent-hover)] active:scale-[0.99]"
       >
