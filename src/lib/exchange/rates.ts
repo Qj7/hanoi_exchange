@@ -1,6 +1,6 @@
 import type { CurrencyCode } from "./data";
 
-export type FiatP2PCode = "UAH" | "VND" | "USD";
+export type FiatP2PCode = "UAH" | "VND";
 
 /** Fiat per 1 USDT from Binance P2P (avg of top 5 ads). */
 export interface UsdtFiatLeg {
@@ -15,7 +15,6 @@ export type RateTable = Partial<Record<RatePairKey, number>>;
 export interface BinanceLegSnapshot {
   UAH: UsdtFiatLeg;
   VND: UsdtFiatLeg;
-  USD: UsdtFiatLeg;
   fetchedAt: number;
 }
 
@@ -31,7 +30,7 @@ export function averagePrices(prices: number[]): number | null {
  * - sell: tradeType SELL — user sells USDT (BUY ads), fiat per USDT
  */
 export function buildRateTable(legs: BinanceLegSnapshot): RateTable {
-  const { UAH, VND, USD } = legs;
+  const { UAH, VND } = legs;
   const table: RateTable = {};
 
   if (UAH.buy > 0 && VND.sell > 0) {
@@ -53,27 +52,6 @@ export function buildRateTable(legs: BinanceLegSnapshot): RateTable {
   }
   if (VND.sell > 0) {
     table.USDT_VND = VND.sell;
-  }
-
-  if (USD.buy > 0) {
-    table.USD_USDT = 1 / USD.buy;
-  }
-  if (USD.sell > 0) {
-    table.USDT_USD = USD.sell;
-  }
-
-  if (UAH.buy > 0 && USD.sell > 0) {
-    table.UAH_USD = USD.sell / UAH.buy;
-  }
-  if (USD.buy > 0 && UAH.sell > 0) {
-    table.USD_UAH = UAH.sell / USD.buy;
-  }
-
-  if (VND.buy > 0 && USD.sell > 0) {
-    table.VND_USD = USD.sell / VND.buy;
-  }
-  if (USD.buy > 0 && VND.sell > 0) {
-    table.USD_VND = VND.sell / USD.buy;
   }
 
   return table;

@@ -6,8 +6,8 @@ import { paymentOptionLabel, type CurrencyCode } from "@/lib/exchange/data";
 import { formatMoney } from "@/lib/exchange/format";
 
 function asCurrency(x: string): CurrencyCode {
-  if (x === "UAH" || x === "VND" || x === "USD" || x === "USDT") return x;
-  return "USD";
+  if (x === "UAH" || x === "VND" || x === "USDT") return x;
+  return "USDT";
 }
 
 function num(v: string | number): number {

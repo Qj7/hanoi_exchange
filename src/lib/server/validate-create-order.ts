@@ -17,7 +17,7 @@ export type CreateOrderPayload = {
 
 function isCurrencyCode(x: unknown): x is CurrencyCode {
   return (
-    x === "UAH" || x === "VND" || x === "USD" || x === "USDT"
+    x === "UAH" || x === "VND" || x === "USDT"
   );
 }
 

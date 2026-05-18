@@ -53,8 +53,8 @@ export function ProfilePage() {
           value="0"
           hint="Первая сделка открывает дополнительные способы получения"
         />
-        <Stat label="Общий объём" value="0 USD" />
-        <Stat label="Лимит на одну сделку" value="3 000 USD" />
+        <Stat label="Общий объём" value="0 USDT" />
+        <Stat label="Лимит на одну сделку" value="3 000 USDT" />
       </Card>
 
       <Card className="p-5 space-y-3">

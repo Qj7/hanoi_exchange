@@ -54,7 +54,7 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
 };
 
 function isCurrencyCode(x: string): x is CurrencyCode {
-  return x === "UAH" || x === "VND" || x === "USD" || x === "USDT";
+  return x === "UAH" || x === "VND" || x === "USDT";
 }
 
 function num(v: string | number): number {
@@ -181,8 +181,8 @@ export function HistoryPage() {
         const st = normalizeStatus(h.status);
         const g = h.give_currency;
         const r = h.receive_currency;
-        const giveCode = isCurrencyCode(g) ? g : "USD";
-        const recvCode = isCurrencyCode(r) ? r : "USD";
+        const giveCode = isCurrencyCode(g) ? g : "USDT";
+        const recvCode = isCurrencyCode(r) ? r : "USDT";
         const methodLine = [
           ...h.pay_methods.map(paymentOptionLabel),
           paymentOptionLabel(h.receive_method),

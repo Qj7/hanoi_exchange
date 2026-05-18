@@ -5,7 +5,7 @@ export function formatNumber(value: number): string {
 }
 
 export function formatMoney(value: number, code: CurrencyCode): string {
-  const fractionDigits = code === "USD" || code === "USDT" ? 2 : 0;
+  const fractionDigits = code === "USDT" ? 2 : 0;
   return `${new Intl.NumberFormat("ru-RU", {
     maximumFractionDigits: fractionDigits,
     minimumFractionDigits: fractionDigits,

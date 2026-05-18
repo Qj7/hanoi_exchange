@@ -83,16 +83,14 @@ async function fetchUsdtFiatLeg(fiat: FiatP2PCode): Promise<UsdtFiatLeg> {
 }
 
 async function fetchBinanceLegs(): Promise<BinanceLegSnapshot> {
-  const [UAH, VND, USD] = await Promise.all([
+  const [UAH, VND] = await Promise.all([
     fetchUsdtFiatLeg("UAH"),
     fetchUsdtFiatLeg("VND"),
-    fetchUsdtFiatLeg("USD"),
   ]);
 
   return {
     UAH,
     VND,
-    USD,
     fetchedAt: Date.now(),
   };
 }

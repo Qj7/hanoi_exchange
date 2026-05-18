@@ -10,7 +10,6 @@ export async function GET() {
       legs: {
         UAH: legs.UAH,
         VND: legs.VND,
-        USD: legs.USD,
       },
       updatedAt: new Date(legs.fetchedAt).toISOString(),
     });
