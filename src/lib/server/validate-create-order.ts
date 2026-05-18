@@ -1,9 +1,7 @@
 import { MIN_AMOUNT } from "@/lib/exchange/constants";
-import {
-  getRate,
-  paymentOptionsFor,
-  type CurrencyCode,
-} from "@/lib/exchange/data";
+import { paymentOptionsFor, type CurrencyCode } from "@/lib/exchange/data";
+import { getRateFromTable } from "@/lib/exchange/rates";
+import { getExchangeRatesSnapshot } from "@/lib/server/binance-p2p";
 
 export type CreateOrderPayload = {
   give_currency: CurrencyCode;
@@ -23,11 +21,12 @@ function isCurrencyCode(x: unknown): x is CurrencyCode {
   );
 }
 
-export function validateCreateOrderBody(
+export async function validateCreateOrderBody(
   body: unknown
-):
+): Promise<
   | { ok: true; data: CreateOrderPayload }
-  | { ok: false; message: string } {
+  | { ok: false; message: string }
+> {
   if (!body || typeof body !== "object") {
     return { ok: false, message: "Некорректное тело запроса" };
   }
@@ -70,7 +69,16 @@ export function validateCreateOrderBody(
     };
   }
 
-  const rate = getRate(give, receive);
+  let rate: number | null;
+  try {
+    const { rates } = await getExchangeRatesSnapshot();
+    rate = getRateFromTable(rates, give, receive);
+  } catch {
+    return {
+      ok: false,
+      message: "Не удалось получить курсы Binance. Попробуйте позже.",
+    };
+  }
   if (!rate) {
     return { ok: false, message: "Обмен этой пары временно недоступен" };
   }

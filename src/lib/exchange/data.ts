@@ -22,28 +22,6 @@ export const CURRENCY_MAP: Record<CurrencyCode, Currency> = CURRENCIES.reduce(
   {} as Record<CurrencyCode, Currency>
 );
 
-// Mid-market rates expressed as: 1 unit of [from] = N units of [to]
-// In production you'd fetch this from an API; here it's hard-coded for demo.
-const RATE_TABLE: Partial<Record<`${CurrencyCode}_${CurrencyCode}`, number>> = {
-  UAH_VND: 627.7,
-  VND_UAH: 0.0016,
-  UAH_USD: 0.024,
-  USD_UAH: 41.7,
-  VND_USD: 0.000039,
-  USD_VND: 25500,
-  UAH_USDT: 0.024,
-  USDT_UAH: 41.7,
-  VND_USDT: 0.000039,
-  USDT_VND: 25500,
-  USD_USDT: 1.0,
-  USDT_USD: 1.0,
-};
-
-export function getRate(from: CurrencyCode, to: CurrencyCode): number | null {
-  if (from === to) return 1;
-  return RATE_TABLE[`${from}_${to}`] ?? null;
-}
-
 export interface PaymentOption {
   id: string;
   label: string;

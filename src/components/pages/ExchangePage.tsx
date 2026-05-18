@@ -4,10 +4,10 @@ import { useMemo, useState } from "react";
 import { MIN_AMOUNT } from "@/lib/exchange/constants";
 import {
   CURRENCY_MAP,
-  getRate,
   paymentOptionsFor,
   type CurrencyCode,
 } from "@/lib/exchange/data";
+import { useExchangeRates } from "@/lib/exchange/use-rates";
 import { formatMoney, formatNumber, formatRate } from "@/lib/exchange/format";
 import { Card } from "@/components/ui/Card";
 import { CurrencyButton } from "@/components/exchange/CurrencyButton";
@@ -31,6 +31,9 @@ export function ExchangePage() {
   const [success, setSuccess] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const { getRate, loading: ratesLoading, error: ratesError } =
+    useExchangeRates();
 
   const giveCurrency = CURRENCY_MAP[give];
   const receiveCurrency = CURRENCY_MAP[receive];
@@ -72,7 +75,9 @@ export function ExchangePage() {
         amountSide === "give" ? give : receive
       }`
     );
-  if (!rate) errors.push("Обмен этой пары временно недоступен");
+  if (ratesLoading) errors.push("Загрузка курса…");
+  else if (ratesError) errors.push(ratesError);
+  else if (!rate) errors.push("Обмен этой пары временно недоступен");
   if (!payMethod) errors.push("Выберите способ оплаты");
   if (!receiveMethod) errors.push("Выберите способ получения");
 
@@ -143,6 +148,8 @@ export function ExchangePage() {
         from={give}
         to={receive}
         rate={rate}
+        loading={ratesLoading}
+        error={ratesError}
       />
 
       <Card className="p-5">
@@ -316,24 +323,35 @@ function RateBanner({
   from,
   to,
   rate,
+  loading,
+  error,
 }: {
   from: CurrencyCode;
   to: CurrencyCode;
   rate: number | null;
+  loading: boolean;
+  error: string | null;
 }) {
-  if (!rate) return null;
   return (
     <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)]">
       <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--text-dim)]">
-        Текущий курс
+        Курс Binance P2P
       </span>
-      <div className="flex items-center gap-2 font-mono text-xs">
-        <span className="text-[var(--text-muted)]">1 {from}</span>
-        <ArrowRightIcon className="w-3 h-3 text-[var(--text-dim)]" />
-        <span className="text-[var(--accent)] font-semibold">
-          {formatRate(rate)} {to}
-        </span>
-      </div>
+      {loading ? (
+        <span className="text-xs text-[var(--text-muted)]">Загрузка…</span>
+      ) : error ? (
+        <span className="text-xs text-[var(--danger)]">Недоступен</span>
+      ) : rate ? (
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="text-[var(--text-muted)]">1 {from}</span>
+          <ArrowRightIcon className="w-3 h-3 text-[var(--text-dim)]" />
+          <span className="text-[var(--accent)] font-semibold">
+            {formatRate(rate)} {to}
+          </span>
+        </div>
+      ) : (
+        <span className="text-xs text-[var(--text-muted)]">—</span>
+      )}
     </div>
   );
 }

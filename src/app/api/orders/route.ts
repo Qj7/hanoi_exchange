@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ожидался JSON" }, { status: 400 });
   }
 
-  const checked = validateCreateOrderBody(json);
+  const checked = await validateCreateOrderBody(json);
   if (!checked.ok) {
     return NextResponse.json({ error: checked.message }, { status: 400 });
   }
