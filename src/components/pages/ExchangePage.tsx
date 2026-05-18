@@ -23,7 +23,7 @@ export function ExchangePage() {
   const [give, setGive] = useState<CurrencyCode>("UAH");
   const [receive, setReceive] = useState<CurrencyCode>("VND");
   const [pickerOpen, setPickerOpen] = useState<Side | null>(null);
-  const [amountSide] = useState<Side>("receive");
+  const [amountSide] = useState<Side>("give");
   const [amount, setAmount] = useState<string>("");
   const [payMethod, setPayMethod] = useState<string>("");
   const [receiveMethod, setReceiveMethod] = useState<string>("");
