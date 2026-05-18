@@ -11,13 +11,6 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { Logo } from "./Logo";
 import { ChevronDownIcon } from "./icons";
 
-const TAB_TITLE: Record<TabKey, string> = {
-  exchange: "Обмен валют",
-  profile: "Профиль",
-  reviews: "Отзывы",
-  history: "История",
-};
-
 export function AppShell() {
   const { status, user } = useTelegram();
   const [tab, setTab] = useState<TabKey>("exchange");
@@ -32,13 +25,6 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto w-full">
-      <header className="sticky top-0 z-30 bg-[var(--bg)]/95 backdrop-blur-md border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
-        <Logo size="sm" />
-        <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-dim)]">
-          {TAB_TITLE[tab]}
-        </div>
-      </header>
-
       <main className="flex-1">
         {tab === "exchange" && <ExchangePage />}
         {tab === "profile" && <ProfilePage />}

@@ -143,7 +143,7 @@ export function ExchangePage() {
   }
 
   return (
-    <div className="px-4 pt-4 pb-6 space-y-3">
+    <div className="px-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-6 space-y-3">
       <RateBanner
         from={give}
         to={receive}
