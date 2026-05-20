@@ -1,17 +1,34 @@
 import { NextResponse } from "next/server";
-import { getExchangeRatesSnapshot } from "@/lib/server/binance-p2p";
+import type { CurrencyCode } from "@/lib/exchange/data";
+import { getPairExchangeRate } from "@/lib/server/binance-p2p";
 
-export async function GET() {
+function parseCurrency(x: string | null): CurrencyCode | null {
+  if (x === "UAH" || x === "VND" || x === "USDT") return x;
+  return null;
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const from = parseCurrency(searchParams.get("from"));
+  const to = parseCurrency(searchParams.get("to"));
+
+  if (!from || !to) {
+    return NextResponse.json(
+      { error: "Укажите параметры from и to (UAH, VND, USDT)" },
+      { status: 400 }
+    );
+  }
+
   try {
-    const { legs, rates } = await getExchangeRatesSnapshot();
+    const snapshot = await getPairExchangeRate(from, to);
 
     return NextResponse.json({
-      rates,
-      legs: {
-        UAH: legs.UAH,
-        VND: legs.VND,
-      },
-      updatedAt: new Date(legs.fetchedAt).toISOString(),
+      from: snapshot.from,
+      to: snapshot.to,
+      rate: snapshot.rate,
+      steps: snapshot.steps,
+      stepPrices: snapshot.stepPrices,
+      updatedAt: new Date(snapshot.fetchedAt).toISOString(),
     });
   } catch (err) {
     const message =

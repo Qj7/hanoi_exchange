@@ -1,10 +1,11 @@
+import type { CurrencyCode } from "@/lib/exchange/data";
 import {
   averagePrices,
-  buildRateTable,
-  type BinanceLegSnapshot,
+  computePairRate,
+  getConversionSteps,
+  type ConversionStep,
   type FiatP2PCode,
-  type RateTable,
-  type UsdtFiatLeg,
+  type P2PTradeType,
 } from "@/lib/exchange/rates";
 
 const BINANCE_SEARCH_URL =
@@ -13,25 +14,26 @@ const BINANCE_SEARCH_URL =
 const ROWS = 5;
 const CACHE_TTL_MS = 60_000;
 
-type TradeType = "BUY" | "SELL";
-
 interface BinanceSearchResponse {
   code?: string;
   success?: boolean;
   data?: Array<{ adv?: { price?: string } }>;
 }
 
-let cached:
-  | {
-      legs: BinanceLegSnapshot;
-      table: RateTable;
-      expiresAt: number;
-    }
-  | undefined;
+type StepCacheKey = `${FiatP2PCode}_${P2PTradeType}`;
+
+const stepCache = new Map<
+  StepCacheKey,
+  { fiatPerUsdt: number; expiresAt: number }
+>();
+
+function stepKey(fiat: FiatP2PCode, tradeType: P2PTradeType): StepCacheKey {
+  return `${fiat}_${tradeType}`;
+}
 
 async function fetchAdPrices(
   fiat: FiatP2PCode,
-  tradeType: TradeType
+  tradeType: P2PTradeType
 ): Promise<number[]> {
   const res = await fetch(BINANCE_SEARCH_URL, {
     method: "POST",
@@ -66,56 +68,82 @@ async function fetchAdPrices(
   return prices;
 }
 
-async function fetchUsdtFiatLeg(fiat: FiatP2PCode): Promise<UsdtFiatLeg> {
-  const [buyPrices, sellPrices] = await Promise.all([
-    fetchAdPrices(fiat, "BUY"),
-    fetchAdPrices(fiat, "SELL"),
-  ]);
-
-  const buy = averagePrices(buyPrices);
-  const sell = averagePrices(sellPrices);
-
-  if (buy == null || sell == null) {
-    throw new Error(`Binance P2P ${fiat}: no prices in top ${ROWS} ads`);
+async function fetchFiatPerUsdt(
+  fiat: FiatP2PCode,
+  tradeType: P2PTradeType,
+  forceRefresh = false
+): Promise<number> {
+  const key = stepKey(fiat, tradeType);
+  const now = Date.now();
+  const hit = stepCache.get(key);
+  if (!forceRefresh && hit && hit.expiresAt > now) {
+    return hit.fiatPerUsdt;
   }
 
-  return { buy, sell };
+  const prices = await fetchAdPrices(fiat, tradeType);
+  const avg = averagePrices(prices);
+  if (avg == null) {
+    throw new Error(
+      `Binance P2P ${fiat}/${tradeType}: no prices in top ${ROWS} ads`
+    );
+  }
+
+  stepCache.set(key, { fiatPerUsdt: avg, expiresAt: now + CACHE_TTL_MS });
+  return avg;
 }
 
-async function fetchBinanceLegs(): Promise<BinanceLegSnapshot> {
-  const [UAH, VND] = await Promise.all([
-    fetchUsdtFiatLeg("UAH"),
-    fetchUsdtFiatLeg("VND"),
-  ]);
+async function fetchStepPrices(
+  steps: ConversionStep[],
+  forceRefresh = false
+): Promise<number[]> {
+  return Promise.all(
+    steps.map((s) => fetchFiatPerUsdt(s.fiat, s.tradeType, forceRefresh))
+  );
+}
+
+export interface PairExchangeRate {
+  from: CurrencyCode;
+  to: CurrencyCode;
+  rate: number;
+  steps: ConversionStep[];
+  /** fiat per 1 USDT for each step */
+  stepPrices: number[];
+  fetchedAt: number;
+}
+
+export async function getPairExchangeRate(
+  from: CurrencyCode,
+  to: CurrencyCode,
+  forceRefresh = false
+): Promise<PairExchangeRate> {
+  const steps = getConversionSteps(from, to);
+  if (!steps) {
+    throw new Error(`Обмен ${from} → ${to} не поддерживается`);
+  }
+
+  if (steps.length === 0) {
+    return {
+      from,
+      to,
+      rate: 1,
+      steps: [],
+      stepPrices: [],
+      fetchedAt: Date.now(),
+    };
+  }
+
+  const stepPrices = await fetchStepPrices(steps, forceRefresh);
+  const rate = computePairRate(from, to, stepPrices);
+  if (rate == null) {
+    throw new Error(`Не удалось рассчитать курс ${from} → ${to}`);
+  }
 
   return {
-    UAH,
-    VND,
+    from,
+    to,
+    rate,
+    steps,
+    stepPrices,
     fetchedAt: Date.now(),
   };
-}
-
-export interface ExchangeRatesSnapshot {
-  legs: BinanceLegSnapshot;
-  rates: RateTable;
-}
-
-export async function getExchangeRatesSnapshot(
-  forceRefresh = false
-): Promise<ExchangeRatesSnapshot> {
-  const now = Date.now();
-  if (!forceRefresh && cached && cached.expiresAt > now) {
-    return { legs: cached.legs, rates: cached.table };
-  }
-
-  const legs = await fetchBinanceLegs();
-  const table = buildRateTable(legs);
-
-  cached = {
-    legs,
-    table,
-    expiresAt: now + CACHE_TTL_MS,
-  };
-
-  return { legs, rates: table };
 }

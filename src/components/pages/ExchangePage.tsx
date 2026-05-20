@@ -33,12 +33,13 @@ export function ExchangePage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  const { getRate, loading: ratesLoading, error: ratesError } =
-    useExchangeRates();
+  const { rate, loading: ratesLoading, error: ratesError } = useExchangeRates(
+    give,
+    receive
+  );
 
   const giveCurrency = CURRENCY_MAP[give];
   const receiveCurrency = CURRENCY_MAP[receive];
-  const rate = getRate(give, receive);
 
   const payOptions = useMemo(() => paymentOptionsFor("give", give), [give]);
   const receiveOptions = useMemo(

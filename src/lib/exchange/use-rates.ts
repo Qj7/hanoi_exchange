@@ -1,41 +1,50 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { RateTable } from "./rates";
-import { getRateFromTable } from "./rates";
 import type { CurrencyCode } from "./data";
 
 const REFRESH_MS = 60_000;
 
-export function useExchangeRates() {
-  const [rates, setRates] = useState<RateTable | null>(null);
+export function useExchangeRates(from: CurrencyCode, to: CurrencyCode) {
+  const [rate, setRate] = useState<number | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (from === to) {
+      setRate(1);
+      setUpdatedAt(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await fetch("/api/rates");
+      const params = new URLSearchParams({ from, to });
+      const res = await fetch(`/api/rates?${params}`);
       const json = (await res.json().catch(() => ({}))) as {
-        rates?: RateTable;
+        rate?: number;
         updatedAt?: string;
         error?: string;
       };
       if (!res.ok) {
         throw new Error(json.error ?? "Не удалось загрузить курсы");
       }
-      if (!json.rates) {
+      if (typeof json.rate !== "number" || !Number.isFinite(json.rate)) {
         throw new Error("Пустой ответ курсов");
       }
-      setRates(json.rates);
+      setRate(json.rate);
       setUpdatedAt(json.updatedAt ?? null);
       setError(null);
     } catch (e) {
+      setRate(null);
       setError(e instanceof Error ? e.message : "Ошибка загрузки курсов");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [from, to]);
 
   useEffect(() => {
     void load();
@@ -43,13 +52,5 @@ export function useExchangeRates() {
     return () => clearInterval(id);
   }, [load]);
 
-  const getRate = useCallback(
-    (from: CurrencyCode, to: CurrencyCode) => {
-      if (!rates) return null;
-      return getRateFromTable(rates, from, to);
-    },
-    [rates]
-  );
-
-  return { rates, updatedAt, loading, error, getRate, refresh: load };
+  return { rate, updatedAt, loading, error, refresh: load };
 }

@@ -1,7 +1,6 @@
 import { MIN_AMOUNT } from "@/lib/exchange/constants";
 import { paymentOptionsFor, type CurrencyCode } from "@/lib/exchange/data";
-import { getRateFromTable } from "@/lib/exchange/rates";
-import { getExchangeRatesSnapshot } from "@/lib/server/binance-p2p";
+import { getPairExchangeRate } from "@/lib/server/binance-p2p";
 
 export type CreateOrderPayload = {
   give_currency: CurrencyCode;
@@ -69,18 +68,16 @@ export async function validateCreateOrderBody(
     };
   }
 
-  let rate: number | null;
+  let rate: number;
   try {
-    const { rates } = await getExchangeRatesSnapshot();
-    rate = getRateFromTable(rates, give, receive);
-  } catch {
-    return {
-      ok: false,
-      message: "Не удалось получить курсы Binance. Попробуйте позже.",
-    };
-  }
-  if (!rate) {
-    return { ok: false, message: "Обмен этой пары временно недоступен" };
+    const snapshot = await getPairExchangeRate(give, receive);
+    rate = snapshot.rate;
+  } catch (e) {
+    const message =
+      e instanceof Error
+        ? e.message
+        : "Не удалось получить курсы Binance. Попробуйте позже.";
+    return { ok: false, message };
   }
 
   let giveAmount: number;
