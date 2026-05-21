@@ -11,7 +11,9 @@ import {
 const BINANCE_SEARCH_URL =
   "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search";
 
+/** Запрашиваем 5 объявлений; первое не участвует в среднем. */
 const ROWS = 5;
+const PRICES_FOR_AVG = 4;
 const CACHE_TTL_MS = 60_000;
 
 interface BinanceSearchResponse {
@@ -58,7 +60,7 @@ async function fetchAdPrices(
   }
 
   const prices: number[] = [];
-  for (const row of json.data) {
+  for (const row of json.data.slice(1)) {
     const raw = row.adv?.price;
     if (raw == null) continue;
     const n = parseFloat(String(raw));
@@ -81,10 +83,15 @@ async function fetchFiatPerUsdt(
   }
 
   const prices = await fetchAdPrices(fiat, tradeType);
+  if (prices.length < PRICES_FOR_AVG) {
+    throw new Error(
+      `Binance P2P ${fiat}/${tradeType}: need ${PRICES_FOR_AVG} prices (skip first ad), got ${prices.length}`
+    );
+  }
   const avg = averagePrices(prices);
   if (avg == null) {
     throw new Error(
-      `Binance P2P ${fiat}/${tradeType}: no prices in top ${ROWS} ads`
+      `Binance P2P ${fiat}/${tradeType}: failed to average prices`
     );
   }
 

@@ -3,7 +3,7 @@ import type { CurrencyCode } from "./data";
 export type FiatP2PCode = "UAH" | "VND";
 export type P2PTradeType = "BUY" | "SELL";
 
-/** One Binance P2P search: fiat per 1 USDT (avg of top ads). */
+/** One Binance P2P search: fiat per 1 USDT (avg of ads 2–5, first skipped). */
 export interface ConversionStep {
   fiat: FiatP2PCode;
   /** BUY — buy USDT with fiat; SELL — sell USDT for fiat */
