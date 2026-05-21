@@ -8,7 +8,11 @@ import {
   type CurrencyCode,
 } from "@/lib/exchange/data";
 import { useExchangeRates } from "@/lib/exchange/use-rates";
-import { formatMoney, formatNumber, formatRate } from "@/lib/exchange/format";
+import {
+  formatMoney,
+  formatNumber,
+  formatRateQuote,
+} from "@/lib/exchange/format";
 import { Card } from "@/components/ui/Card";
 import { CurrencyButton } from "@/components/exchange/CurrencyButton";
 import { CurrencyPicker } from "@/components/exchange/CurrencyPicker";
@@ -342,6 +346,9 @@ function RateBanner({
   loading: boolean;
   error: string | null;
 }) {
+  const quote =
+    rate != null && rate > 0 ? formatRateQuote(from, to, rate) : null;
+
   return (
     <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)]">
       <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--text-dim)]">
@@ -351,12 +358,12 @@ function RateBanner({
         <span className="text-xs text-[var(--text-muted)]">Загрузка…</span>
       ) : error ? (
         <span className="text-xs text-[var(--danger)]">Недоступен</span>
-      ) : rate ? (
+      ) : quote ? (
         <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-[var(--text-muted)]">1 {from}</span>
+          <span className="text-[var(--text-muted)]">{quote.fromLabel}</span>
           <ArrowRightIcon className="w-3 h-3 text-[var(--text-dim)]" />
           <span className="text-[var(--accent)] font-semibold">
-            {formatRate(rate)} {to}
+            {quote.toLabel}
           </span>
         </div>
       ) : (
