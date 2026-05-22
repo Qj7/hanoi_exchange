@@ -1,5 +1,6 @@
 import { MIN_AMOUNT } from "@/lib/exchange/constants";
 import { paymentOptionsFor, type CurrencyCode } from "@/lib/exchange/data";
+import { applyUahMarkup } from "@/lib/exchange/uah-fee";
 import { getPairExchangeRate } from "@/lib/server/binance-p2p";
 
 export type CreateOrderPayload = {
@@ -80,15 +81,13 @@ export async function validateCreateOrderBody(
     return { ok: false, message };
   }
 
-  let giveAmount: number;
-  let receiveAmount: number;
-  if (amountSide === "receive") {
-    receiveAmount = numeric;
-    giveAmount = numeric / rate;
-  } else {
-    giveAmount = numeric;
-    receiveAmount = numeric * rate;
-  }
+  const { give: giveAmount, receive: receiveAmount } = applyUahMarkup(
+    give,
+    receive,
+    amountSide,
+    numeric,
+    rate
+  );
 
   if (!Array.isArray(payMethods) || payMethods.length !== 1) {
     return { ok: false, message: "Выберите способ оплаты" };

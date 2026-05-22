@@ -8,11 +8,8 @@ import {
   type CurrencyCode,
 } from "@/lib/exchange/data";
 import { useExchangeRates } from "@/lib/exchange/use-rates";
-import {
-  formatMoney,
-  formatNumber,
-  formatRateQuote,
-} from "@/lib/exchange/format";
+import { formatMoney, formatNumber } from "@/lib/exchange/format";
+import { applyUahMarkup } from "@/lib/exchange/uah-fee";
 import { Card } from "@/components/ui/Card";
 import { CurrencyButton } from "@/components/exchange/CurrencyButton";
 import { CurrencyPicker } from "@/components/exchange/CurrencyPicker";
@@ -56,13 +53,8 @@ export function ExchangePage() {
 
   const conversion = useMemo(() => {
     if (!rate || !numericAmount) return null;
-    if (amountSide === "receive") {
-      const giveValue = numericAmount / rate;
-      return { give: giveValue, receive: numericAmount };
-    }
-    const receiveValue = numericAmount * rate;
-    return { give: numericAmount, receive: receiveValue };
-  }, [rate, numericAmount, amountSide]);
+    return applyUahMarkup(give, receive, amountSide, numericAmount, rate);
+  }, [rate, numericAmount, amountSide, give, receive]);
 
   const swap = () => {
     haptic("medium");
@@ -158,14 +150,6 @@ export function ExchangePage() {
 
   return (
     <div className="px-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-6 space-y-3">
-      <RateBanner
-        from={give}
-        to={receive}
-        rate={rate}
-        loading={ratesLoading}
-        error={ratesError}
-      />
-
       <Card className="p-5">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <div className="flex flex-col items-center gap-2">
@@ -330,46 +314,6 @@ function Label({ children }: { children: React.ReactNode }) {
     <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--text-dim)] font-medium">
       {children}
     </span>
-  );
-}
-
-function RateBanner({
-  from,
-  to,
-  rate,
-  loading,
-  error,
-}: {
-  from: CurrencyCode;
-  to: CurrencyCode;
-  rate: number | null;
-  loading: boolean;
-  error: string | null;
-}) {
-  const quote =
-    rate != null && rate > 0 ? formatRateQuote(from, to, rate) : null;
-
-  return (
-    <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)]">
-      <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--text-dim)]">
-        Курс Binance P2P
-      </span>
-      {loading ? (
-        <span className="text-xs text-[var(--text-muted)]">Загрузка…</span>
-      ) : error ? (
-        <span className="text-xs text-[var(--danger)]">Недоступен</span>
-      ) : quote ? (
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-[var(--text-muted)]">{quote.fromLabel}</span>
-          <ArrowRightIcon className="w-3 h-3 text-[var(--text-dim)]" />
-          <span className="text-[var(--accent)] font-semibold">
-            {quote.toLabel}
-          </span>
-        </div>
-      ) : (
-        <span className="text-xs text-[var(--text-muted)]">—</span>
-      )}
-    </div>
   );
 }
 
