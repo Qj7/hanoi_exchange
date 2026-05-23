@@ -23,12 +23,15 @@ export function toUahEquivalent(
   return amount * UAH_PER_UNIT[currency];
 }
 
-/** Комиссия по сумме в UAH-эквиваленте: <5k → 9%, ≥5k → 7%, ≥20k → 5%. */
+/** Базовая ступень комиссии по UAH-эквиваленту: <5k → 9%, ≥5k → 7%, ≥20k → 5%. */
 export function uahMarkupPercent(uahEquivalent: number): number {
   if (uahEquivalent >= TIER_UAH_HIGH) return 5;
   if (uahEquivalent >= TIER_UAH_MID) return 7;
   return 9;
 }
+
+/** Дополнительная надбавка к базовой ступени (п.п.). */
+const MARKUP_EXTRA_PP = 1;
 
 export type ConversionSides = {
   give: number;
@@ -37,7 +40,8 @@ export type ConversionSides = {
 
 /**
  * Курс Binance с комиссией в пользу компании (вычитается из суммы клиента).
- * Ступень комиссии — по UAH-эквиваленту введённой суммы.
+ * Ступень — по UAH-эквиваленту введённой суммы + 1 п.п.
+ * Итого: <5k → 10%, ≥5k → 8%, ≥20k → 6%.
  */
 export function applyUahMarkup(
   give: CurrencyCode,
@@ -59,7 +63,7 @@ export function applyUahMarkup(
 
   const tierCurrency = amountSide === "give" ? give : receive;
   const uahEquivalent = toUahEquivalent(amountInput, tierCurrency);
-  const markup = uahMarkupPercent(uahEquivalent) / 100;
+  const markup = (uahMarkupPercent(uahEquivalent) + MARKUP_EXTRA_PP) / 100;
 
   if (amountSide === "give") {
     receiveAmount *= 1 - markup;
