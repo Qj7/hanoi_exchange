@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
 import type { CurrencyCode } from "./data";
 
 const REFRESH_MS = 60_000;
@@ -72,4 +71,15 @@ export function useExchangeRates(
     /** Сума, для якої зараз (або останній раз) підтягували курс. */
     amountForRate: debouncedGiveAmount,
   };
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(id);
+  }, [value, delayMs]);
+
+  return debounced;
 }
