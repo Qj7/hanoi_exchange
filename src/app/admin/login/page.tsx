@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
       });
       const json = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(json.error ?? "Ошибка входа");
+        setError(json.error ?? "Помилка входу");
         return;
       }
       router.replace("/admin");
@@ -36,14 +36,14 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] p-8 shadow-xl">
-        <h1 className="text-lg font-semibold tracking-tight mb-1">Админка</h1>
+        <h1 className="text-lg font-semibold tracking-tight mb-1">Адмінка</h1>
         <p className="text-xs text-[var(--text-muted)] mb-6">
-          Вход только для операторов обменника.
+          Вхід лише для операторів обмінника.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-[10px] uppercase tracking-wider text-[var(--text-dim)]">
-              Логин
+              Логін
             </label>
             <input
               autoComplete="username"
@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
             disabled={loading}
             className="w-full h-11 rounded-lg bg-[var(--accent)] text-[#11151f] font-semibold text-sm disabled:opacity-40"
           >
-            {loading ? "Вход..." : "Войти"}
+            {loading ? "Вхід..." : "Увійти"}
           </button>
         </form>
       </div>
@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
         href="/"
         className="mt-8 text-xs text-[var(--text-muted)] hover:text-[var(--accent)]"
       >
-        ← На главную
+        ← На головну
       </Link>
     </div>
   );

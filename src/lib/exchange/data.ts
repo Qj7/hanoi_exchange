@@ -8,8 +8,8 @@ export interface Currency {
 }
 
 export const CURRENCIES: Currency[] = [
-  { code: "UAH", label: "Украинская гривна", flag: "UA", symbol: "₴" },
-  { code: "VND", label: "Вьетнамский донг", flag: "VN", symbol: "₫" },
+  { code: "UAH", label: "Українська гривня", flag: "UA", symbol: "₴" },
+  { code: "VND", label: "В'єтнамський донг", flag: "VN", symbol: "₫" },
   { code: "USDT", label: "Tether (TRC-20)", flag: "₮", symbol: "₮" },
 ];
 
@@ -31,18 +31,18 @@ export interface PaymentOption {
 
 export const PAYMENT_OPTIONS: PaymentOption[] = [
   // GIVE side (way to pay)
-  { id: "cash_uah", label: "Наличные UAH", currencies: ["UAH"], group: "give" },
-  { id: "cash_vnd", label: "Наличные VND", currencies: ["VND"], group: "give" },
+  { id: "cash_uah", label: "Готівка UAH", currencies: ["UAH"], group: "give" },
+  { id: "cash_vnd", label: "Готівка VND", currencies: ["VND"], group: "give" },
   { id: "mono", label: "Monobank", currencies: ["UAH"], group: "give" },
   { id: "privat24", label: "Приват24", currencies: ["UAH"], group: "give" },
   { id: "pumb", label: "ПУМБ", currencies: ["UAH"], group: "give" },
   { id: "vietcombank", label: "Vietcombank / BIDV", currencies: ["VND"], group: "give" },
   { id: "usdt_trc20", label: "USDT TRC-20", currencies: ["USDT"], group: "give" },
   // RECEIVE side
-  { id: "in_person", label: "Личная встреча", currencies: ["UAH", "VND"], group: "receive" },
+  { id: "in_person", label: "Особиста зустріч", currencies: ["UAH", "VND"], group: "receive" },
   { id: "atm_vcb", label: "Банкомат Vietcombank", currencies: ["VND"], group: "receive" },
-  { id: "transfer_vnd", label: "Перевод на VND-карту", currencies: ["VND"], group: "receive" },
-  { id: "transfer_uah", label: "Перевод на UAH-карту", currencies: ["UAH"], group: "receive" },
+  { id: "transfer_vnd", label: "Переказ на VND-картку", currencies: ["VND"], group: "receive" },
+  { id: "transfer_uah", label: "Переказ на UAH-картку", currencies: ["UAH"], group: "receive" },
   { id: "usdt_receive", label: "USDT TRC-20", currencies: ["USDT"], group: "receive" },
 ];
 

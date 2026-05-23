@@ -19,13 +19,13 @@ function num(v: string | number): number {
 function adminStatusLabel(status: string): string {
   switch (status) {
     case "pending":
-      return "В очереди";
+      return "У черзі";
     case "in_progress":
-      return "В работе";
+      return "В роботі";
     case "completed":
       return "Завершено";
     case "cancelled":
-      return "Отменено";
+      return "Скасовано";
     default:
       return status;
   }
@@ -83,7 +83,7 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
           "error" in data &&
           typeof (data as { error: unknown }).error === "string"
             ? (data as { error: string }).error
-            : "Не удалось обновить статус";
+            : "Не вдалося оновити статус";
         setActionError(msg);
         return;
       }
@@ -92,7 +92,7 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
         prev.map((r) => (r.id === orderId ? { ...r, status } : r))
       );
     } catch {
-      setActionError("Сеть недоступна");
+      setActionError("Мережа недоступна");
     } finally {
       setBusyOrderId(null);
     }
@@ -125,7 +125,7 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
             "error" in data &&
             typeof (data as { error: unknown }).error === "string"
               ? (data as { error: string }).error
-              : "Не удалось обновить список";
+              : "Не вдалося оновити список";
           setPollError(msg);
           return;
         }
@@ -139,10 +139,10 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
           setPollError(null);
           setRows((data as { orders: AdminOrderRow[] }).orders);
         } else {
-          setPollError("Некорректный ответ сервера");
+          setPollError("Некоректна відповідь сервера");
         }
       } catch {
-        if (!cancelled) setPollError("Сеть недоступна");
+        if (!cancelled) setPollError("Мережа недоступна");
       }
     };
 
@@ -169,7 +169,7 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
         {actionError && (
           <p className="text-sm text-[var(--danger)]">{actionError}</p>
         )}
-        <p className="text-sm text-[var(--text-muted)]">Пока нет заявок.</p>
+        <p className="text-sm text-[var(--text-muted)]">Поки немає заявок.</p>
       </div>
     );
   }
@@ -189,17 +189,17 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
               <th className="px-3 py-2 font-medium">Дата</th>
               <th className="px-3 py-2 font-medium">Telegram</th>
               <th className="px-3 py-2 font-medium">Пара</th>
-              <th className="px-3 py-2 font-medium">Суммы</th>
-              <th className="px-3 py-2 font-medium">Способы</th>
+              <th className="px-3 py-2 font-medium">Суми</th>
+              <th className="px-3 py-2 font-medium">Способи</th>
               <th className="px-3 py-2 font-medium">Статус</th>
-              <th className="px-3 py-2 font-medium">Действия</th>
+              <th className="px-3 py-2 font-medium">Дії</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
             {rows.map((r) => {
               const created = new Date(r.created_at);
               const dateStr = Number.isFinite(created.getTime())
-                ? created.toLocaleString("ru-RU")
+                ? created.toLocaleString("uk-UA")
                 : r.created_at;
               const ga = num(r.give_amount);
               const ra = num(r.receive_amount);
@@ -257,7 +257,7 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
                         onClick={() => void patchOrderStatus(r.id, "in_progress")}
                         className="px-2.5 py-1 rounded-md border border-[var(--border-strong)] text-[var(--text-muted)] hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-50 transition-colors"
                       >
-                        {busyOrderId === r.id ? "…" : "Взять в работу"}
+                        {busyOrderId === r.id ? "…" : "Узяти в роботу"}
                       </button>
                     )}
                     {r.status === "in_progress" && (
@@ -267,7 +267,7 @@ export function AdminOrdersPanel({ initialRows, intervalMs = 5000 }: Props) {
                         onClick={() => void patchOrderStatus(r.id, "completed")}
                         className="px-2.5 py-1 rounded-md border border-[var(--success)]/50 text-[var(--success)] hover:bg-[var(--success)]/10 disabled:opacity-50 transition-colors"
                       >
-                        {busyOrderId === r.id ? "…" : "Завершить"}
+                        {busyOrderId === r.id ? "…" : "Завершити"}
                       </button>
                     )}
                     {(r.status === "completed" ||

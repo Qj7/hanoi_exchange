@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Заявки</h1>
           <p className="text-xs text-[var(--text-muted)] mt-1">
-            Все заявки из Telegram Mini App
+            Усі заявки з Telegram Mini App
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -40,11 +40,11 @@ export default async function AdminDashboardPage() {
 
       {dbSkipped && (
         <p className="text-sm text-[var(--info)] mb-6 leading-relaxed max-w-xl">
-          Supabase для сервера не настроен. В{" "}
+          Supabase для сервера не налаштовано. У{" "}
           <code className="font-mono text-xs text-[var(--text-muted)]">
             .env.local
           </code>{" "}
-          или на хостинге задай{" "}
+          або на хостингу задай{" "}
           <code className="font-mono text-xs text-[var(--text-muted)]">
             NEXT_PUBLIC_SUPABASE_URL
           </code>

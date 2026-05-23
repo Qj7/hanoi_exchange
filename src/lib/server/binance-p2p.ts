@@ -201,7 +201,7 @@ export async function getPairExchangeRate(
   const { forceRefresh = false, giveAmount } = options;
   const steps = getConversionSteps(from, to);
   if (!steps) {
-    throw new Error(`Обмен ${from} → ${to} не поддерживается`);
+    throw new Error(`Обмін ${from} → ${to} не підтримується`);
   }
 
   if (steps.length === 0) {
@@ -223,7 +223,7 @@ export async function getPairExchangeRate(
   );
   const rate = computePairRate(from, to, stepPrices);
   if (rate == null) {
-    throw new Error(`Не удалось рассчитать курс ${from} → ${to}`);
+    throw new Error(`Не вдалося розрахувати курс ${from} → ${to}`);
   }
 
   return {

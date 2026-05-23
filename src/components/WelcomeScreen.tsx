@@ -21,12 +21,12 @@ export function WelcomeScreen() {
           </div>
 
           <h1 className="text-2xl font-semibold tracking-tight mb-2">
-            Вход через Telegram
+            Вхід через Telegram
           </h1>
           <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-8">
-            Это приложение работает только внутри Telegram.
+            Цей застосунок працює лише в Telegram.
             <br />
-            Откройте Mini App из Telegram, чтобы получить доступ к обмену.
+            Відкрийте Mini App у Telegram, щоб отримати доступ до обміну.
           </p>
 
           <a
@@ -36,7 +36,7 @@ export function WelcomeScreen() {
             className="w-full flex items-center justify-center gap-2 h-12 rounded-lg bg-[var(--accent)] text-[#11151f] font-medium tracking-tight transition-colors hover:bg-[var(--accent-hover)]"
           >
             <TelegramIcon className="w-5 h-5" />
-            Открыть приложение
+            Відкрити застосунок
           </a>
           <div className="mt-3 text-[11px] text-[var(--text-dim)] font-mono select-all break-all">
             {config.app.miniAppUrl}
@@ -45,25 +45,25 @@ export function WelcomeScreen() {
           <div className="mt-10 w-full grid gap-3 text-left">
             <FeatureRow
               icon={<ShieldIcon className="w-4 h-4" />}
-              title="Безопасные сделки"
-              description="Идентификация по Telegram-аккаунту"
+              title="Безпечні угоди"
+              description="Ідентифікація за Telegram-акаунтом"
             />
             <FeatureRow
               icon={<ClockIcon className="w-4 h-4" />}
-              title="Курс в реальном времени"
-              description="Обновление котировок каждую минуту"
+              title="Курс у реальному часі"
+              description="Оновлення котирувань щохвилини"
             />
             <FeatureRow
               icon={<CheckIcon className="w-4 h-4" />}
-              title="Подтверждение оператором"
-              description="Каждая заявка проверяется менеджером"
+              title="Підтвердження оператором"
+              description="Кожну заявку перевіряє менеджер"
             />
           </div>
         </div>
       </main>
 
       <footer className="px-6 pb-8 text-center text-[11px] text-[var(--text-dim)]">
-        Hanoi Exchange — лицензированный обмен валют. © {new Date().getFullYear()}
+        Hanoi Exchange — ліцензований обмін валют. © {new Date().getFullYear()}
       </footer>
     </div>
   );

@@ -33,7 +33,7 @@ export async function runSupabaseHealthCheck(): Promise<SupabaseHealthResult> {
     return {
       ok: false,
       error:
-        "Задайте NEXT_PUBLIC_SUPABASE_URL и SUPABASE_SECRET_KEY.",
+        "Задайте NEXT_PUBLIC_SUPABASE_URL і SUPABASE_SECRET_KEY.",
       httpStatus: 503 as const,
     };
   }

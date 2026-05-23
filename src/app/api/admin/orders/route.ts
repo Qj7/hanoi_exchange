@@ -13,12 +13,12 @@ export async function GET() {
   const jar = await cookies();
   const token = jar.get(ADMIN_SESSION_COOKIE)?.value;
   if (!verifyAdminSessionToken(token)) {
-    return NextResponse.json({ error: "Нет доступа" }, { status: 401 });
+    return NextResponse.json({ error: "Немає доступу" }, { status: 401 });
   }
 
   if (!hasOrdersDatabase()) {
     return NextResponse.json(
-      { error: "База заявок не настроена" },
+      { error: "Базу заявок не налаштовано" },
       { status: 503 }
     );
   }

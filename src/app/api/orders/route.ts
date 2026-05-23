@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const botToken = getBotToken();
   if (!botToken) {
     return NextResponse.json(
-      { error: "TELEGRAM_BOT_TOKEN не настроен на сервере" },
+      { error: "TELEGRAM_BOT_TOKEN не налаштовано на сервері" },
       { status: 503 }
     );
   }
@@ -25,14 +25,14 @@ export async function POST(request: Request) {
   const initData = request.headers.get(INIT_HEADER)?.trim() ?? "";
   const validated = validateTelegramWebAppInitData(initData, botToken);
   if (!validated) {
-    return NextResponse.json({ error: "Недействительные данные Telegram" }, { status: 401 });
+    return NextResponse.json({ error: "Недійсні дані Telegram" }, { status: 401 });
   }
 
   let json: unknown;
   try {
     json = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ожидался JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Очікувався JSON" }, { status: 400 });
   }
 
   const checked = await validateCreateOrderBody(json);
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Supabase не настроен: NEXT_PUBLIC_SUPABASE_URL и SUPABASE_SECRET_KEY (см. DEPLOY.md).",
+          "Supabase не налаштовано: NEXT_PUBLIC_SUPABASE_URL і SUPABASE_SECRET_KEY (див. DEPLOY.md).",
       },
       { status: 503 }
     );
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
   const botToken = getBotToken();
   if (!botToken) {
     return NextResponse.json(
-      { error: "TELEGRAM_BOT_TOKEN не настроен на сервере" },
+      { error: "TELEGRAM_BOT_TOKEN не налаштовано на сервері" },
       { status: 503 }
     );
   }
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
   const initData = request.headers.get(INIT_HEADER)?.trim() ?? "";
   const validated = validateTelegramWebAppInitData(initData, botToken);
   if (!validated) {
-    return NextResponse.json({ error: "Недействительные данные Telegram" }, { status: 401 });
+    return NextResponse.json({ error: "Недійсні дані Telegram" }, { status: 401 });
   }
 
   if (!hasOrdersDatabase()) {

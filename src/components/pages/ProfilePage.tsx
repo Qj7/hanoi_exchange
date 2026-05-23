@@ -29,39 +29,39 @@ export function ProfilePage() {
           )}
           <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-md bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent)]/40">
             <ShieldIcon className="w-3 h-3" />
-            Telegram-аккаунт
+            Telegram-акаунт
           </div>
         </div>
       </Card>
 
       <Card className="divide-y divide-[var(--border)]">
         <Row label="Telegram ID" value={chatId ? String(chatId) : "—"} mono />
-        <Row label="Имя" value={user.first_name ?? "—"} />
-        {user.last_name && <Row label="Фамилия" value={user.last_name} />}
+        <Row label="Ім'я" value={user.first_name ?? "—"} />
+        {user.last_name && <Row label="Прізвище" value={user.last_name} />}
         {user.username && <Row label="Username" value={`@${user.username}`} />}
-        <Row label="Язык" value={user.language_code?.toUpperCase() ?? "—"} />
+        <Row label="Мова" value={user.language_code?.toUpperCase() ?? "—"} />
         <Row
           label="Premium"
-          value={user.is_premium ? "Да" : "Нет"}
+          value={user.is_premium ? "Так" : "Ні"}
         />
       </Card>
 
       <Card className="p-5 space-y-3">
-        <SectionTitle>Статус клиента</SectionTitle>
+        <SectionTitle>Статус клієнта</SectionTitle>
         <Stat
-          label="Совершено сделок"
+          label="Завершено угод"
           value="0"
-          hint="Первая сделка открывает дополнительные способы получения"
+          hint="Перша угода відкриває додаткові способи отримання"
         />
-        <Stat label="Общий объём" value="0 USDT" />
-        <Stat label="Лимит на одну сделку" value="3 000 USDT" />
+        <Stat label="Загальний обсяг" value="0 USDT" />
+        <Stat label="Ліміт на одну угоду" value="3 000 USDT" />
       </Card>
 
       <Card className="p-5 space-y-3">
-        <SectionTitle>Документы и согласия</SectionTitle>
-        <DocRow label="Условия обслуживания" />
-        <DocRow label="Политика конфиденциальности" />
-        <DocRow label="AML / KYC политика" />
+        <SectionTitle>Документи та згоди</SectionTitle>
+        <DocRow label="Умови обслуговування" />
+        <DocRow label="Політика конфіденційності" />
+        <DocRow label="Політика AML / KYC" />
       </Card>
     </div>
   );

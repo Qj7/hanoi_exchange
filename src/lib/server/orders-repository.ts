@@ -29,7 +29,7 @@ export async function adminTransitionOrderStatus(
   target: AdminOrderStatusAction
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!isSupabaseServerConfigured()) {
-    return { ok: false, error: "База данных не настроена" };
+    return { ok: false, error: "Базу даних не налаштовано" };
   }
 
   const fromStatus = target === "in_progress" ? "pending" : "in_progress";
@@ -50,13 +50,13 @@ export async function adminTransitionOrderStatus(
         ok: false,
         error:
           target === "in_progress"
-            ? "Взять в работу можно только заявку в очереди"
-            : "Завершить можно только заявку в работе",
+            ? "Узяти в роботу можна лише заявку в черзі"
+            : "Завершити можна лише заявку в роботі",
       };
     }
     return { ok: true };
   } catch {
-    return { ok: false, error: "Не удалось обновить статус" };
+    return { ok: false, error: "Не вдалося оновити статус" };
   }
 }
 
@@ -68,7 +68,7 @@ export async function insertExchangeOrder(
     return {
       ok: false,
       message:
-        "Supabase не настроен: нужны NEXT_PUBLIC_SUPABASE_URL и SUPABASE_SECRET_KEY.",
+        "Supabase не налаштовано: потрібні NEXT_PUBLIC_SUPABASE_URL і SUPABASE_SECRET_KEY.",
     };
   }
 
@@ -95,11 +95,11 @@ export async function insertExchangeOrder(
       .single();
 
     if (error || !data?.id) {
-      return { ok: false, message: "Не удалось сохранить заявку" };
+      return { ok: false, message: "Не вдалося зберегти заявку" };
     }
     return { ok: true, id: data.id };
   } catch {
-    return { ok: false, message: "Не удалось сохранить заявку" };
+    return { ok: false, message: "Не вдалося зберегти заявку" };
   }
 }
 
@@ -121,10 +121,10 @@ export async function listOrdersForUser(
       .order("created_at", { ascending: false })
       .limit(100);
 
-    if (error) return { error: "Не удалось загрузить историю" };
+    if (error) return { error: "Не вдалося завантажити історію" };
     return (data ?? []) as OrderListItem[];
   } catch {
-    return { error: "Не удалось загрузить историю" };
+    return { error: "Не вдалося завантажити історію" };
   }
 }
 
@@ -148,6 +148,6 @@ export async function listAllOrdersForAdmin(): Promise<
     if (error) return { error: error.message };
     return (data ?? []) as AdminOrderRow[];
   } catch {
-    return { error: "Не удалось загрузить заявки" };
+    return { error: "Не вдалося завантажити заявки" };
   }
 }

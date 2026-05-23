@@ -37,10 +37,10 @@ interface ApiOrder {
 }
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
-  completed: "Выполнена",
-  pending: "В очереди",
-  in_progress: "В работе",
-  cancelled: "Отменена",
+  completed: "Виконано",
+  pending: "У черзі",
+  in_progress: "В роботі",
+  cancelled: "Скасовано",
 };
 
 const STATUS_STYLE: Record<OrderStatus, string> = {
@@ -107,7 +107,7 @@ export function HistoryPage() {
         if (cancelled) return;
         if (!res.ok) {
           if (!silent) {
-            setError(json.error ?? "Не удалось загрузить историю");
+            setError(json.error ?? "Не вдалося завантажити історію");
             setOrders([]);
           }
           return;
@@ -117,7 +117,7 @@ export function HistoryPage() {
       } catch {
         if (cancelled) return;
         if (!silent) {
-          setError("Ошибка сети");
+          setError("Помилка мережі");
           setOrders([]);
         }
       } finally {
@@ -151,7 +151,7 @@ export function HistoryPage() {
   if (loading) {
     return (
       <div className="px-6 py-20 flex flex-col items-center text-center">
-        <p className="text-xs text-[var(--text-muted)]">Загрузка...</p>
+        <p className="text-xs text-[var(--text-muted)]">Завантаження...</p>
       </div>
     );
   }
@@ -165,7 +165,7 @@ export function HistoryPage() {
           onClick={() => setRetryKey((k) => k + 1)}
           className="text-xs text-[var(--accent)] underline"
         >
-          Повторить
+          Повторити
         </button>
       </div>
     );
@@ -190,7 +190,7 @@ export function HistoryPage() {
 
         const created = new Date(h.created_at);
         const dateLabel = Number.isFinite(created.getTime())
-          ? created.toLocaleString("ru-RU", {
+          ? created.toLocaleString("uk-UA", {
               day: "2-digit",
               month: "short",
               hour: "2-digit",
@@ -215,7 +215,7 @@ export function HistoryPage() {
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <div className="text-[10px] uppercase text-[var(--text-dim)] tracking-wider">
-                  Отдаёте
+                  Віддаєте
                 </div>
                 <div className="text-sm font-mono mt-0.5">
                   {formatMoney(num(h.give_amount), giveCode)}
@@ -224,7 +224,7 @@ export function HistoryPage() {
               <ArrowRightIcon className="w-4 h-4 text-[var(--text-dim)]" />
               <div className="flex-1 text-right">
                 <div className="text-[10px] uppercase text-[var(--text-dim)] tracking-wider">
-                  Получаете
+                  Отримуєте
                 </div>
                 <div className="text-sm font-mono mt-0.5">
                   {formatMoney(num(h.receive_amount), recvCode)}
@@ -248,11 +248,11 @@ function EmptyState() {
         <HistoryIcon className="w-6 h-6" />
       </div>
       <h2 className="text-base font-semibold tracking-tight mb-1.5">
-        История пуста
+        Історія порожня
       </h2>
       <p className="text-xs text-[var(--text-muted)] max-w-[240px] leading-relaxed">
-        Здесь появятся ваши заявки на обмен. Создайте первую — это занимает
-        меньше минуты.
+        Тут з&apos;являться ваші заявки на обмін. Створіть першу — це займає
+        менше хвилини.
       </p>
     </div>
   );

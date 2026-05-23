@@ -2,12 +2,12 @@ import type { CurrencyCode } from "./data";
 import { RATE_DISPLAY_BASE } from "./constants";
 
 export function formatNumber(value: number): string {
-  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(value);
 }
 
 export function formatMoney(value: number, code: CurrencyCode): string {
   const fractionDigits = code === "USDT" ? 2 : 0;
-  return `${new Intl.NumberFormat("ru-RU", {
+  return `${new Intl.NumberFormat("uk-UA", {
     maximumFractionDigits: fractionDigits,
     minimumFractionDigits: fractionDigits,
   }).format(value)} ${code}`;

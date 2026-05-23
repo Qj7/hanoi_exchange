@@ -66,21 +66,21 @@ export function ExchangePage() {
   };
 
   const fieldErrors: string[] = [];
-  if (give === receive) fieldErrors.push("Валюты не должны совпадать");
-  if (!numericAmount) fieldErrors.push("Укажите сумму");
+  if (give === receive) fieldErrors.push("Валюти не повинні збігатися");
+  if (!numericAmount) fieldErrors.push("Вкажіть суму");
   else if (numericAmount < min)
     fieldErrors.push(
-      `Минимальная сумма: ${formatNumber(min)} ${
+      `Мінімальна сума: ${formatNumber(min)} ${
         amountSide === "give" ? give : receive
       }`
     );
-  if (ratesLoading) fieldErrors.push("Загрузка курса…");
+  if (ratesLoading) fieldErrors.push("Завантаження курсу…");
   else if (ratesError) fieldErrors.push(ratesError);
-  else if (!rate) fieldErrors.push("Обмен этой пары временно недоступен");
+  else if (!rate) fieldErrors.push("Обмін цієї пари тимчасово недоступний");
 
   const methodErrors: string[] = [];
-  if (!payMethod) methodErrors.push("Выберите способ оплаты");
-  if (!receiveMethod) methodErrors.push("Выберите способ получения");
+  if (!payMethod) methodErrors.push("Оберіть спосіб оплати");
+  if (!receiveMethod) methodErrors.push("Оберіть спосіб отримання");
 
   const isValid = fieldErrors.length === 0 && methodErrors.length === 0;
 
@@ -93,7 +93,7 @@ export function ExchangePage() {
     setSubmitAttempted(true);
     if (!isValid || submitting) return;
     if (!initData) {
-      setSubmitError("Нет данных Telegram. Откройте приложение в Telegram.");
+      setSubmitError("Немає даних Telegram. Відкрийте застосунок у Telegram.");
       return;
     }
     setSubmitting(true);
@@ -121,7 +121,7 @@ export function ExchangePage() {
         id?: string;
       };
       if (!res.ok) {
-        setSubmitError(json.error ?? "Не удалось отправить заявку");
+        setSubmitError(json.error ?? "Не вдалося надіслати заявку");
         return;
       }
       setCreatedOrderId(typeof json.id === "string" ? json.id : null);
@@ -151,10 +151,18 @@ export function ExchangePage() {
 
   return (
     <div className="px-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-6 space-y-3">
-      <Card className="p-5">
+      <Card className="p-5 space-y-2">
+        <div className="grid grid-cols-[1fr_auto_1fr] gap-3">
+          <div className="text-center">
+            <Label>Віддаю</Label>
+          </div>
+          <span className="w-10" aria-hidden />
+          <div className="text-center">
+            <Label>Отримую</Label>
+          </div>
+        </div>
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <div className="flex flex-col items-center gap-2">
-            <Label>Отдаю</Label>
+          <div className="flex justify-center min-w-0">
             <CurrencyButton
               currency={giveCurrency}
               selected
@@ -164,13 +172,12 @@ export function ExchangePage() {
           <button
             type="button"
             onClick={swap}
-            aria-label="Поменять местами"
-            className="w-9 h-9 rounded-full border border-[var(--border-strong)] bg-[var(--bg-elevated-2)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors flex items-center justify-center"
+            aria-label="Поміняти місцями"
+            className="shrink-0 w-10 h-10 rounded-full border border-[var(--border-strong)] bg-[var(--bg)] text-[var(--text-muted)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] active:scale-95 transition-all flex items-center justify-center"
           >
-            <SwapIcon className="w-4 h-4" />
+            <SwapIcon className="w-[18px] h-[18px]" />
           </button>
-          <div className="flex flex-col items-center gap-2">
-            <Label>Получаю</Label>
+          <div className="flex justify-center min-w-0">
             <CurrencyButton
               currency={receiveCurrency}
               selected
@@ -183,7 +190,7 @@ export function ExchangePage() {
       <Card className="p-5 space-y-4">
         <div className="flex items-center">
           <Label>
-            Сумма в{" "}
+            Сума в{" "}
             <span className="text-[var(--text)]">
               {amountSide === "give" ? give : receive}
             </span>
@@ -197,7 +204,7 @@ export function ExchangePage() {
           <input
             type="text"
             inputMode="decimal"
-            placeholder={`От ${formatNumber(min)}`}
+            placeholder={`Від ${formatNumber(min)}`}
             value={amount}
             onChange={(e) => {
               const cleaned = e.target.value.replace(/[^\d.,]/g, "");
@@ -209,7 +216,7 @@ export function ExchangePage() {
 
         {conversion && rate && (
           <div className="flex items-center justify-between text-xs">
-            <span className="text-[var(--text-muted)]">К получению</span>
+            <span className="text-[var(--text-muted)]">До отримання</span>
             <span className="font-mono text-[var(--text)]">
               {formatMoney(
                 amountSide === "receive" ? conversion.give : conversion.receive,
@@ -222,7 +229,7 @@ export function ExchangePage() {
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center">
-          <Label>Способ оплаты</Label>
+          <Label>Спосіб оплати</Label>
         </div>
         <select
           value={payMethod}
@@ -232,7 +239,7 @@ export function ExchangePage() {
           }}
           className="w-full h-11 bg-[var(--bg-elevated-2)] border border-[var(--border)] rounded-lg px-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition-colors"
         >
-          <option value="">Выберите способ оплаты</option>
+          <option value="">Оберіть спосіб оплати</option>
           {payOptions.map((opt) => (
             <option key={opt.id} value={opt.id}>
               {opt.label}
@@ -243,7 +250,7 @@ export function ExchangePage() {
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center">
-          <Label>Способ получения</Label>
+          <Label>Спосіб отримання</Label>
         </div>
         <select
           value={receiveMethod}
@@ -253,7 +260,7 @@ export function ExchangePage() {
           }}
           className="w-full h-11 bg-[var(--bg-elevated-2)] border border-[var(--border)] rounded-lg px-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition-colors"
         >
-          <option value="">Выберите способ получения</option>
+          <option value="">Оберіть спосіб отримання</option>
           {receiveOptions.map((opt) => (
             <option key={opt.id} value={opt.id}>
               {opt.label}
@@ -281,10 +288,10 @@ export function ExchangePage() {
         className="w-full h-12 rounded-lg bg-[var(--accent)] text-[#11151f] font-semibold tracking-tight flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--accent-hover)] active:scale-[0.99]"
       >
         {submitting ? (
-          "Отправка..."
+          "Надсилання..."
         ) : (
           <>
-            Отправить заявку
+            Надіслати заявку
             <ArrowRightIcon className="w-4 h-4" />
           </>
         )}
@@ -344,7 +351,7 @@ function SuccessScreen({
         </svg>
       </div>
       <h2 className="text-xl font-semibold tracking-tight mb-2">
-        Заявка отправлена
+        Заявку надіслано
       </h2>
       {shortRef && (
         <p className="text-xs font-mono text-[var(--accent)] mb-2">
@@ -352,15 +359,15 @@ function SuccessScreen({
         </p>
       )}
       <p className="text-sm text-[var(--text-muted)] max-w-xs leading-relaxed mb-7">
-        Менеджер свяжется с вами в Telegram в течение 5 минут для подтверждения
-        обмена.
+        Менеджер зв&apos;яжеться з вами в Telegram протягом 5 хвилин для
+        підтвердження обміну.
       </p>
       <button
         type="button"
         onClick={onClose}
         className="h-11 px-6 rounded-lg border border-[var(--border-strong)] text-sm text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
       >
-        Создать ещё одну
+        Створити ще одну
       </button>
     </div>
   );

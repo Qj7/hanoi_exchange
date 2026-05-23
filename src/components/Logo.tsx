@@ -25,7 +25,7 @@ export function Logo({ size = "md", showSubtitle = false }: LogoProps) {
         </span>
         {showSubtitle && (
           <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-dim)] mt-1">
-            Currency Exchange Service
+            Сервіс обміну валют
           </span>
         )}
       </div>

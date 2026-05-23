@@ -37,17 +37,17 @@ export function useExchangeRates(
         error?: string;
       };
       if (!res.ok) {
-        throw new Error(json.error ?? "Не удалось загрузить курсы");
+        throw new Error(json.error ?? "Не вдалося завантажити курси");
       }
       if (typeof json.rate !== "number" || !Number.isFinite(json.rate)) {
-        throw new Error("Пустой ответ курсов");
+        throw new Error("Порожня відповідь курсів");
       }
       setRate(json.rate);
       setUpdatedAt(json.updatedAt ?? null);
       setError(null);
     } catch (e) {
       setRate(null);
-      setError(e instanceof Error ? e.message : "Ошибка загрузки курсов");
+      setError(e instanceof Error ? e.message : "Помилка завантаження курсів");
     } finally {
       setLoading(false);
     }

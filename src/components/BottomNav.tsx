@@ -1,14 +1,9 @@
 "use client";
 
 import { useTelegram } from "@/lib/telegram/TelegramProvider";
-import {
-  ExchangeIcon,
-  HistoryIcon,
-  ProfileIcon,
-  ReviewsIcon,
-} from "./icons";
+import { ExchangeIcon, HistoryIcon, ProfileIcon } from "./icons";
 
-export type TabKey = "exchange" | "profile" | "reviews" | "history";
+export type TabKey = "exchange" | "profile" | "history";
 
 interface BottomNavProps {
   active: TabKey;
@@ -16,10 +11,9 @@ interface BottomNavProps {
 }
 
 const TABS: { key: TabKey; label: string; Icon: typeof ExchangeIcon }[] = [
-  { key: "exchange", label: "Обмен", Icon: ExchangeIcon },
-  { key: "profile", label: "Профиль", Icon: ProfileIcon },
-  { key: "reviews", label: "Отзывы", Icon: ReviewsIcon },
-  { key: "history", label: "История", Icon: HistoryIcon },
+  { key: "exchange", label: "Обмін", Icon: ExchangeIcon },
+  { key: "profile", label: "Профіль", Icon: ProfileIcon },
+  { key: "history", label: "Історія", Icon: HistoryIcon },
 ];
 
 export function BottomNav({ active, onChange }: BottomNavProps) {
@@ -27,7 +21,7 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
 
   return (
     <nav className="sticky bottom-0 z-40 bg-[var(--bg)]/95 backdrop-blur-md border-t border-[var(--border)]">
-      <div className="max-w-md mx-auto grid grid-cols-4">
+      <div className="max-w-md mx-auto grid grid-cols-3">
         {TABS.map(({ key, label, Icon }) => {
           const isActive = active === key;
           return (

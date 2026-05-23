@@ -29,32 +29,32 @@ export async function PATCH(
   const jar = await cookies();
   const token = jar.get(ADMIN_SESSION_COOKIE)?.value;
   if (!verifyAdminSessionToken(token)) {
-    return NextResponse.json({ error: "Нет доступа" }, { status: 401 });
+    return NextResponse.json({ error: "Немає доступу" }, { status: 401 });
   }
 
   if (!hasOrdersDatabase()) {
     return NextResponse.json(
-      { error: "База заявок не настроена" },
+      { error: "Базу заявок не налаштовано" },
       { status: 503 }
     );
   }
 
   const { id } = await ctx.params;
   if (!id || !UUID_RE.test(id)) {
-    return NextResponse.json({ error: "Некорректный идентификатор" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректний ідентифікатор" }, { status: 400 });
   }
 
   let json: unknown;
   try {
     json = await req.json();
   } catch {
-    return NextResponse.json({ error: "Ожидался JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Очікувався JSON" }, { status: 400 });
   }
 
   const status = parseStatus(json);
   if (!status) {
     return NextResponse.json(
-      { error: "Ожидалось поле status: in_progress | completed" },
+      { error: "Очікувалось поле status: in_progress | completed" },
       { status: 400 }
     );
   }

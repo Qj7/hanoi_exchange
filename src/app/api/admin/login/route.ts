@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "На сервере не заданы ADMIN_USERNAME, ADMIN_PASSWORD или ADMIN_SESSION_SECRET (≥16 символов). Проверь переменные окружения Production на Vercel и сделай Redeploy.",
+          "На сервері не задано ADMIN_USERNAME, ADMIN_PASSWORD або ADMIN_SESSION_SECRET (≥16 символів). Перевір змінні середовища Production на Vercel і зроби Redeploy.",
       },
       { status: 503 }
     );
@@ -21,19 +21,19 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ожидался JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Очікувався JSON" }, { status: 400 });
   }
   if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "Некорректное тело" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректне тіло" }, { status: 400 });
   }
   const u = (body as Record<string, unknown>).username;
   const p = (body as Record<string, unknown>).password;
   if (typeof u !== "string" || typeof p !== "string") {
-    return NextResponse.json({ error: "Логин и пароль обязательны" }, { status: 400 });
+    return NextResponse.json({ error: "Логін і пароль обов'язкові" }, { status: 400 });
   }
 
   if (!adminCredentialsMatch(u, p)) {
-    return NextResponse.json({ error: "Неверный логин или пароль" }, { status: 401 });
+    return NextResponse.json({ error: "Невірний логін або пароль" }, { status: 401 });
   }
 
   let token: string;
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     token = signAdminSession();
   } catch {
     return NextResponse.json(
-      { error: "ADMIN_SESSION_SECRET не настроен (минимум 16 символов)" },
+      { error: "ADMIN_SESSION_SECRET не налаштовано (мінімум 16 символів)" },
       { status: 503 }
     );
   }

@@ -28,7 +28,7 @@ export async function validateCreateOrderBody(
   | { ok: false; message: string }
 > {
   if (!body || typeof body !== "object") {
-    return { ok: false, message: "Некорректное тело запроса" };
+    return { ok: false, message: "Некоректне тіло запиту" };
   }
   const o = body as Record<string, unknown>;
 
@@ -40,14 +40,14 @@ export async function validateCreateOrderBody(
   const receiveMethod = o.receive_method;
 
   if (!isCurrencyCode(give) || !isCurrencyCode(receive)) {
-    return { ok: false, message: "Некорректная валюта" };
+    return { ok: false, message: "Некоректна валюта" };
   }
   if (give === receive) {
-    return { ok: false, message: "Валюты не должны совпадать" };
+    return { ok: false, message: "Валюти не повинні збігатися" };
   }
 
   if (amountSide !== "give" && amountSide !== "receive") {
-    return { ok: false, message: "Некорректная сторона суммы" };
+    return { ok: false, message: "Некоректна сторона суми" };
   }
 
   const numeric =
@@ -57,7 +57,7 @@ export async function validateCreateOrderBody(
         ? parseFloat(amountInput.replace(",", "."))
         : NaN;
   if (!Number.isFinite(numeric) || numeric <= 0) {
-    return { ok: false, message: "Укажите сумму" };
+    return { ok: false, message: "Вкажіть суму" };
   }
 
   const min =
@@ -65,7 +65,7 @@ export async function validateCreateOrderBody(
   if (numeric < min) {
     return {
       ok: false,
-      message: `Минимальная сумма: ${min} ${amountSide === "give" ? give : receive}`,
+      message: `Мінімальна сума: ${min} ${amountSide === "give" ? give : receive}`,
     };
   }
 
@@ -79,7 +79,7 @@ export async function validateCreateOrderBody(
     const message =
       e instanceof Error
         ? e.message
-        : "Не удалось получить курсы Binance. Попробуйте позже.";
+        : "Не вдалося отримати курси Binance. Спробуйте пізніше.";
     return { ok: false, message };
   }
 
@@ -92,25 +92,25 @@ export async function validateCreateOrderBody(
   );
 
   if (!Array.isArray(payMethods) || payMethods.length !== 1) {
-    return { ok: false, message: "Выберите способ оплаты" };
+    return { ok: false, message: "Оберіть спосіб оплати" };
   }
   const allowedGive = new Set(
     paymentOptionsFor("give", give).map((p) => p.id)
   );
   for (const id of payMethods) {
     if (typeof id !== "string" || !allowedGive.has(id)) {
-      return { ok: false, message: "Некорректный способ оплаты" };
+      return { ok: false, message: "Некоректний спосіб оплати" };
     }
   }
 
   if (typeof receiveMethod !== "string" || !receiveMethod.trim()) {
-    return { ok: false, message: "Выберите способ получения" };
+    return { ok: false, message: "Оберіть спосіб отримання" };
   }
   const allowedRecv = new Set(
     paymentOptionsFor("receive", receive).map((p) => p.id)
   );
   if (!allowedRecv.has(receiveMethod)) {
-    return { ok: false, message: "Некорректный способ получения" };
+    return { ok: false, message: "Некоректний спосіб отримання" };
   }
 
   return {

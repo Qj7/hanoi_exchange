@@ -34,19 +34,19 @@ export function CurrencyPicker({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <button
         type="button"
-        aria-label="Закрыть"
+        aria-label="Закрити"
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in-up"
       />
       <div className="relative w-full max-w-md bg-[var(--bg-elevated)] border border-[var(--border)] rounded-t-2xl sm:rounded-2xl mx-0 sm:mx-4 animate-fade-in-up">
         <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-[var(--border)]">
-          <h3 className="text-sm font-semibold tracking-tight">Выберите валюту</h3>
+          <h3 className="text-sm font-semibold tracking-tight">Оберіть валюту</h3>
           <button
             type="button"
             onClick={onClose}
             className="text-[var(--text-muted)] hover:text-[var(--text)] text-sm"
           >
-            Отмена
+            Скасувати
           </button>
         </div>
         <ul className="py-2 max-h-[60vh] overflow-y-auto">
@@ -86,7 +86,7 @@ export function CurrencyPicker({
                   </div>
                   {isSelected && (
                     <span className="text-[var(--accent)] text-xs uppercase tracking-wider">
-                      Выбрано
+                      Обрано
                     </span>
                   )}
                 </button>

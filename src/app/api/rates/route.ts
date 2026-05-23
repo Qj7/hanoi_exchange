@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   if (!from || !to) {
     return NextResponse.json(
-      { error: "Укажите параметры from и to (UAH, VND, USDT)" },
+      { error: "Вкажіть параметри from і to (UAH, VND, USDT)" },
       { status: 400 }
     );
   }
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     });
   } catch (err) {
     const message =
-      err instanceof Error ? err.message : "Не удалось получить курсы Binance";
+      err instanceof Error ? err.message : "Не вдалося отримати курси Binance";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

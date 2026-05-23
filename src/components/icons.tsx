@@ -20,14 +20,6 @@ export function ProfileIcon(props: IconProps) {
   );
 }
 
-export function ReviewsIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M21 12a8 8 0 0 1-11.6 7.16L4 20l.84-5.4A8 8 0 1 1 21 12Z" />
-    </svg>
-  );
-}
-
 export function HistoryIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -57,11 +49,19 @@ export function ArrowRightIcon(props: IconProps) {
 
 export function SwapIcon(props: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M7 4 3 8l4 4" />
-      <path d="M3 8h13a4 4 0 0 1 4 4" />
-      <path d="m17 20 4-4-4-4" />
-      <path d="M21 16H8a4 4 0 0 1-4-4" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M7 9 3 12l4 3" />
+      <path d="M3 12h14" />
+      <path d="M17 15l4-3-4-3" />
+      <path d="M21 12H7" />
     </svg>
   );
 }
@@ -87,15 +87,6 @@ export function ClockIcon(props: IconProps) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 2" />
-    </svg>
-  );
-}
-
-export function StarIcon(props: IconProps & { filled?: boolean }) {
-  const { filled, ...rest } = props;
-  return (
-    <svg viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" {...rest}>
-      <path d="m12 2.5 2.9 6.1 6.6.7-4.9 4.6 1.4 6.6L12 17.3l-6 3.2 1.4-6.6L2.5 9.3l6.6-.7L12 2.5Z" />
     </svg>
   );
 }

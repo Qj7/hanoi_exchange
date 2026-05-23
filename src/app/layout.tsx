@@ -19,12 +19,12 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.app.miniAppUrl),
-  title: `${config.app.name} — обмен валют`,
+  title: `${config.app.name} — обмін валют`,
   description:
-    "Профессиональный обмен UAH / VND / USDT. Выгодный курс, безопасные сделки, поддержка 24/7.",
+    "Професійний обмін UAH / VND / USDT. Вигідний курс, безпечні угоди, підтримка 24/7.",
   openGraph: {
-    title: `${config.app.name} — обмен валют`,
-    description: "Безопасный обмен валют через Telegram Mini App.",
+    title: `${config.app.name} — обмін валют`,
+    description: "Безпечний обмін валют через Telegram Mini App.",
     url: config.app.miniAppUrl,
     siteName: config.app.name,
     type: "website",
@@ -47,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="ru"
+      lang="uk"
       suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
