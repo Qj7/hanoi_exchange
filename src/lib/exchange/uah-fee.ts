@@ -36,8 +36,11 @@ export type ConversionSides = {
 };
 
 /**
- * Курс без комиссии → give/receive с учётом процента.
+ * Курс Binance + комиссия сверху (не вычитается из суммы к получению).
  * Ступень комиссии — по UAH-эквиваленту введённой суммы.
+ *
+ * give: клиент указывает сумму обмена → получает полный курс, комиссия сверху к отдаче.
+ * receive: клиент указывает желаемую сумму → базовая стоимость + комиссия сверху к отдаче.
  */
 export function applyUahMarkup(
   give: CurrencyCode,
@@ -46,26 +49,19 @@ export function applyUahMarkup(
   amountInput: number,
   rate: number
 ): ConversionSides {
-  let giveAmount: number;
-  let receiveAmount: number;
-
-  if (amountSide === "receive") {
-    receiveAmount = amountInput;
-    giveAmount = amountInput / rate;
-  } else {
-    giveAmount = amountInput;
-    receiveAmount = amountInput * rate;
-  }
-
   const tierCurrency = amountSide === "give" ? give : receive;
   const uahEquivalent = toUahEquivalent(amountInput, tierCurrency);
   const markup = uahMarkupPercent(uahEquivalent) / 100;
 
-  if (amountSide === "give") {
-    receiveAmount *= 1 - markup;
-  } else {
-    giveAmount /= 1 - markup;
+  if (amountSide === "receive") {
+    return {
+      give: (amountInput / rate) * (1 + markup),
+      receive: amountInput,
+    };
   }
 
-  return { give: giveAmount, receive: receiveAmount };
+  return {
+    give: amountInput * (1 + markup),
+    receive: amountInput * rate,
+  };
 }
