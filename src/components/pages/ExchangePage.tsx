@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { MIN_AMOUNT } from "@/lib/exchange/constants";
 import {
   CURRENCY_MAP,
@@ -19,8 +18,6 @@ import { useTelegram } from "@/lib/telegram/TelegramProvider";
 
 type Side = "give" | "receive";
 
-const AMOUNT_DEBOUNCE_MS = 400;
-
 function parseAmountInput(value: string): number {
   return parseFloat(value.replace(",", ".")) || 0;
 }
@@ -33,7 +30,6 @@ export function ExchangePage() {
   const [pickerOpen, setPickerOpen] = useState<Side | null>(null);
   const [amountSide] = useState<Side>("give");
   const [amount, setAmount] = useState<string>("");
-  const debouncedAmount = useDebouncedValue(amount, AMOUNT_DEBOUNCE_MS);
   const [payMethod, setPayMethod] = useState<string>("");
   const [receiveMethod, setReceiveMethod] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -43,15 +39,16 @@ export function ExchangePage() {
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const numericAmount = parseAmountInput(amount);
-  const debouncedNumericAmount = parseAmountInput(debouncedAmount);
-  const amountSettled = amount === debouncedAmount;
-  const amountForRates =
-    submitAttempted || amountSettled ? numericAmount : debouncedNumericAmount;
 
-  const { rate, loading: ratesLoading, error: ratesError } = useExchangeRates(
+  const {
+    rate,
+    loading: ratesLoading,
+    error: ratesError,
+    amountForRate,
+  } = useExchangeRates(
     give,
     receive,
-    amountSide === "give" && amountForRates > 0 ? amountForRates : undefined
+    amountSide === "give" && numericAmount > 0 ? numericAmount : undefined
   );
 
   const giveCurrency = CURRENCY_MAP[give];
@@ -65,15 +62,9 @@ export function ExchangePage() {
   const min = amountSide === "give" ? MIN_AMOUNT[give] : MIN_AMOUNT[receive];
 
   const conversion = useMemo(() => {
-    if (!rate || !debouncedNumericAmount || !amountSettled) return null;
-    return applyUahMarkup(
-      give,
-      receive,
-      amountSide,
-      debouncedNumericAmount,
-      rate
-    );
-  }, [rate, debouncedNumericAmount, amountSettled, amountSide, give, receive]);
+    if (!rate || !amountForRate || amountForRate <= 0) return null;
+    return applyUahMarkup(give, receive, amountSide, amountForRate, rate);
+  }, [rate, amountForRate, amountSide, give, receive]);
 
   const swap = () => {
     haptic("medium");
@@ -107,10 +98,8 @@ export function ExchangePage() {
   const isValid = fieldErrors.length === 0 && methodErrors.length === 0;
 
   const displayErrors = [
-    ...((amount.length > 0 && amountSettled) || submitAttempted
-      ? buildFieldErrors(
-          submitAttempted ? numericAmount : debouncedNumericAmount
-        )
+    ...(amount.length > 0 || submitAttempted
+      ? buildFieldErrors(numericAmount)
       : []),
     ...(submitAttempted ? methodErrors : []),
   ];

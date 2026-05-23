@@ -1,15 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import type { CurrencyCode } from "./data";
 
 const REFRESH_MS = 60_000;
+/** Запит курсу з сумою — лише після паузи в наборі (менше навантаження на API). */
+const GIVE_AMOUNT_DEBOUNCE_MS = 400;
 
 export function useExchangeRates(
   from: CurrencyCode,
   to: CurrencyCode,
   giveAmount?: number
 ) {
+  const debouncedGiveAmount = useDebouncedValue(giveAmount, GIVE_AMOUNT_DEBOUNCE_MS);
   const [rate, setRate] = useState<number | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,8 +31,8 @@ export function useExchangeRates(
     setLoading(true);
     try {
       const params = new URLSearchParams({ from, to });
-      if (giveAmount != null && giveAmount > 0) {
-        params.set("amount", String(giveAmount));
+      if (debouncedGiveAmount != null && debouncedGiveAmount > 0) {
+        params.set("amount", String(debouncedGiveAmount));
       }
       const res = await fetch(`/api/rates?${params}`);
       const json = (await res.json().catch(() => ({}))) as {
@@ -51,7 +55,7 @@ export function useExchangeRates(
     } finally {
       setLoading(false);
     }
-  }, [from, to, giveAmount]);
+  }, [from, to, debouncedGiveAmount]);
 
   useEffect(() => {
     void load();
@@ -59,5 +63,13 @@ export function useExchangeRates(
     return () => clearInterval(id);
   }, [load]);
 
-  return { rate, updatedAt, loading, error, refresh: load };
+  return {
+    rate,
+    updatedAt,
+    loading,
+    error,
+    refresh: load,
+    /** Сума, для якої зараз (або останній раз) підтягували курс. */
+    amountForRate: debouncedGiveAmount,
+  };
 }
