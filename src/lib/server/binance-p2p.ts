@@ -51,12 +51,23 @@ function parsePrice(raw: string | undefined): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-/** Цены adv.price из объявлений #2–#5 в JSON. */
-async function fetchAdPrices(
+/** Цены adv.price из объявлений #2…n (первое в JSON не берём). */
+function pricesFromAdsAfterFirst(
+  data: NonNullable<BinanceSearchResponse["data"]>
+): number[] {
+  const prices: number[] = [];
+  for (const row of data.slice(1)) {
+    const n = parsePrice(row.adv?.price);
+    if (n != null) prices.push(n);
+  }
+  return prices;
+}
+
+async function searchBinanceAds(
   fiat: FiatP2PCode,
   tradeType: P2PTradeType,
   transAmount?: number
-): Promise<number[]> {
+): Promise<NonNullable<BinanceSearchResponse["data"]>> {
   const body: Record<string, unknown> = {
     fiat,
     asset: "USDT",
@@ -84,10 +95,29 @@ async function fetchAdPrices(
     throw new Error(`Binance P2P ${fiat}/${tradeType}: invalid response`);
   }
 
-  const prices: number[] = [];
-  for (const row of json.data.slice(1)) {
-    const n = parsePrice(row.adv?.price);
-    if (n != null) prices.push(n);
+  return json.data;
+}
+
+/** Запрос в Binance → цены из объявлений #2–5. */
+async function fetchAdPrices(
+  fiat: FiatP2PCode,
+  tradeType: P2PTradeType,
+  transAmount?: number
+): Promise<number[]> {
+  let data = await searchBinanceAds(fiat, tradeType, transAmount);
+  let prices = pricesFromAdsAfterFirst(data);
+
+  // Binance иногда отдаёт <2 объявлений или пустые цены в #2–5 с transAmount
+  if (prices.length === 0 && transAmount != null && transAmount > 0) {
+    data = await searchBinanceAds(fiat, tradeType);
+    prices = pricesFromAdsAfterFirst(data);
+  }
+
+  if (prices.length === 0) {
+    const total = data.length;
+    throw new Error(
+      `Binance P2P ${fiat}/${tradeType}: нет цен в объявлениях 2–${total} (всего ${total})`
+    );
   }
 
   return prices;
