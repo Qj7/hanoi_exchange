@@ -51,12 +51,16 @@ function parsePrice(raw: string | undefined): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-/** Цены adv.price из объявлений #2…n (первое в JSON не берём). */
+/**
+ * Цены adv.price из объявлений #2…ROWS (первое в JSON пропускаем).
+ * Достаточно 1…(ROWS−1) цен — сколько Binance вернул.
+ */
 function pricesFromAdsAfterFirst(
   data: NonNullable<BinanceSearchResponse["data"]>
 ): number[] {
   const prices: number[] = [];
-  for (const row of data.slice(1)) {
+  const end = Math.min(data.length, ROWS);
+  for (const row of data.slice(1, end)) {
     const n = parsePrice(row.adv?.price);
     if (n != null) prices.push(n);
   }
@@ -98,25 +102,32 @@ async function searchBinanceAds(
   return json.data;
 }
 
-/** Запрос в Binance → цены из объявлений #2–5. */
+/**
+ * 1) С transAmount — среднее по #2…ROWS (сколько есть, хоть 1 цена).
+ * 2) Если с amount нет ни одной цены — запрос без amount, снова skip #1 и среднее.
+ */
 async function fetchAdPrices(
   fiat: FiatP2PCode,
   tradeType: P2PTradeType,
   transAmount?: number
 ): Promise<number[]> {
-  let data = await searchBinanceAds(fiat, tradeType, transAmount);
-  let prices = pricesFromAdsAfterFirst(data);
+  const withAmount =
+    transAmount != null && transAmount > 0 ? Math.round(transAmount) : undefined;
 
-  // Binance иногда отдаёт <2 объявлений или пустые цены в #2–5 с transAmount
-  if (prices.length === 0 && transAmount != null && transAmount > 0) {
-    data = await searchBinanceAds(fiat, tradeType);
-    prices = pricesFromAdsAfterFirst(data);
+  if (withAmount != null) {
+    const dataWithAmount = await searchBinanceAds(fiat, tradeType, withAmount);
+    const pricesWithAmount = pricesFromAdsAfterFirst(dataWithAmount);
+    if (pricesWithAmount.length > 0) {
+      return pricesWithAmount;
+    }
   }
 
+  const data = await searchBinanceAds(fiat, tradeType);
+  const prices = pricesFromAdsAfterFirst(data);
+
   if (prices.length === 0) {
-    const total = data.length;
     throw new Error(
-      `Binance P2P ${fiat}/${tradeType}: нет цен в объявлениях 2–${total} (всего ${total})`
+      `Binance P2P ${fiat}/${tradeType}: нет цен в объявлениях 2–${ROWS}`
     );
   }
 
@@ -137,12 +148,7 @@ async function fetchFiatPerUsdt(
   }
 
   const prices = await fetchAdPrices(fiat, tradeType, transAmount);
-  const avg = averagePrices(prices);
-  if (avg == null) {
-    throw new Error(
-      `Binance P2P ${fiat}/${tradeType}: no prices in ads 2–5`
-    );
-  }
+  const avg = averagePrices(prices)!;
 
   stepCache.set(key, { fiatPerUsdt: avg, expiresAt: now + CACHE_TTL_MS });
   return avg;
