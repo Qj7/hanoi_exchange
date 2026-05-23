@@ -19,8 +19,13 @@ export async function GET(request: Request) {
     );
   }
 
+  const amountRaw = searchParams.get("amount");
+  const amount = amountRaw != null ? parseFloat(amountRaw) : NaN;
+  const giveAmount =
+    Number.isFinite(amount) && amount > 0 ? amount : undefined;
+
   try {
-    const snapshot = await getPairExchangeRate(from, to);
+    const snapshot = await getPairExchangeRate(from, to, { giveAmount });
 
     return NextResponse.json({
       from: snapshot.from,

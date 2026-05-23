@@ -34,9 +34,12 @@ export function ExchangePage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
+  const numericAmount = parseFloat(amount.replace(",", ".")) || 0;
+
   const { rate, loading: ratesLoading, error: ratesError } = useExchangeRates(
     give,
-    receive
+    receive,
+    amountSide === "give" && numericAmount > 0 ? numericAmount : undefined
   );
 
   const giveCurrency = CURRENCY_MAP[give];
@@ -47,8 +50,6 @@ export function ExchangePage() {
     () => paymentOptionsFor("receive", receive),
     [receive]
   );
-
-  const numericAmount = parseFloat(amount.replace(",", ".")) || 0;
   const min = amountSide === "give" ? MIN_AMOUNT[give] : MIN_AMOUNT[receive];
 
   const conversion = useMemo(() => {

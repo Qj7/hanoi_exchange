@@ -5,7 +5,11 @@ import type { CurrencyCode } from "./data";
 
 const REFRESH_MS = 60_000;
 
-export function useExchangeRates(from: CurrencyCode, to: CurrencyCode) {
+export function useExchangeRates(
+  from: CurrencyCode,
+  to: CurrencyCode,
+  giveAmount?: number
+) {
   const [rate, setRate] = useState<number | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +27,9 @@ export function useExchangeRates(from: CurrencyCode, to: CurrencyCode) {
     setLoading(true);
     try {
       const params = new URLSearchParams({ from, to });
+      if (giveAmount != null && giveAmount > 0) {
+        params.set("amount", String(giveAmount));
+      }
       const res = await fetch(`/api/rates?${params}`);
       const json = (await res.json().catch(() => ({}))) as {
         rate?: number;
@@ -44,7 +51,7 @@ export function useExchangeRates(from: CurrencyCode, to: CurrencyCode) {
     } finally {
       setLoading(false);
     }
-  }, [from, to]);
+  }, [from, to, giveAmount]);
 
   useEffect(() => {
     void load();

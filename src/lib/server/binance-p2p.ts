@@ -11,7 +11,7 @@ import {
 const BINANCE_SEARCH_URL =
   "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search";
 
-/** Запрашиваем 5 объявлений; первое не участвует в среднем (остальные до 4). */
+/** 5 объявлений; в среднее идут #2–#5 (первое в JSON пропускаем). */
 const ROWS = 5;
 const CACHE_TTL_MS = 60_000;
 
@@ -21,31 +21,57 @@ interface BinanceSearchResponse {
   data?: Array<{ adv?: { price?: string } }>;
 }
 
-type StepCacheKey = `${FiatP2PCode}_${P2PTradeType}`;
+export type PairRateOptions = {
+  forceRefresh?: boolean;
+  /** Сумма «отдаю» — если есть, уходит в Binance как transAmount */
+  giveAmount?: number;
+};
+
+type StepCacheKey = string;
 
 const stepCache = new Map<
   StepCacheKey,
   { fiatPerUsdt: number; expiresAt: number }
 >();
 
-function stepKey(fiat: FiatP2PCode, tradeType: P2PTradeType): StepCacheKey {
-  return `${fiat}_${tradeType}`;
+function stepCacheKey(
+  fiat: FiatP2PCode,
+  tradeType: P2PTradeType,
+  transAmount?: number
+): StepCacheKey {
+  if (transAmount == null || !(transAmount > 0)) {
+    return `${fiat}_${tradeType}`;
+  }
+  return `${fiat}_${tradeType}_${Math.round(transAmount)}`;
 }
 
+function parsePrice(raw: string | undefined): number | null {
+  if (raw == null) return null;
+  const n = parseFloat(String(raw));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** Цены adv.price из объявлений #2–#5 в JSON. */
 async function fetchAdPrices(
   fiat: FiatP2PCode,
-  tradeType: P2PTradeType
+  tradeType: P2PTradeType,
+  transAmount?: number
 ): Promise<number[]> {
+  const body: Record<string, unknown> = {
+    fiat,
+    asset: "USDT",
+    tradeType,
+    page: 1,
+    rows: ROWS,
+  };
+  if (transAmount != null && transAmount > 0) {
+    body.transAmount = Math.round(transAmount);
+  }
+
   const res = await fetch(BINANCE_SEARCH_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      fiat,
-      asset: "USDT",
-      tradeType,
-      page: 1,
-      rows: ROWS,
-    }),
+    body: JSON.stringify(body),
     cache: "no-store",
   });
 
@@ -60,10 +86,8 @@ async function fetchAdPrices(
 
   const prices: number[] = [];
   for (const row of json.data.slice(1)) {
-    const raw = row.adv?.price;
-    if (raw == null) continue;
-    const n = parseFloat(String(raw));
-    if (Number.isFinite(n) && n > 0) prices.push(n);
+    const n = parsePrice(row.adv?.price);
+    if (n != null) prices.push(n);
   }
 
   return prices;
@@ -72,20 +96,21 @@ async function fetchAdPrices(
 async function fetchFiatPerUsdt(
   fiat: FiatP2PCode,
   tradeType: P2PTradeType,
-  forceRefresh = false
+  forceRefresh = false,
+  transAmount?: number
 ): Promise<number> {
-  const key = stepKey(fiat, tradeType);
+  const key = stepCacheKey(fiat, tradeType, transAmount);
   const now = Date.now();
   const hit = stepCache.get(key);
   if (!forceRefresh && hit && hit.expiresAt > now) {
     return hit.fiatPerUsdt;
   }
 
-  const prices = await fetchAdPrices(fiat, tradeType);
+  const prices = await fetchAdPrices(fiat, tradeType, transAmount);
   const avg = averagePrices(prices);
   if (avg == null) {
     throw new Error(
-      `Binance P2P ${fiat}/${tradeType}: no prices after skipping first ad`
+      `Binance P2P ${fiat}/${tradeType}: no prices in ads 2–5`
     );
   }
 
@@ -93,12 +118,32 @@ async function fetchFiatPerUsdt(
   return avg;
 }
 
+function transAmountForStep(
+  step: ConversionStep,
+  giveAmount: number | undefined,
+  from: CurrencyCode | undefined
+): number | undefined {
+  if (giveAmount == null || !(giveAmount > 0) || from !== step.fiat) {
+    return undefined;
+  }
+  return giveAmount;
+}
+
 async function fetchStepPrices(
   steps: ConversionStep[],
-  forceRefresh = false
+  forceRefresh: boolean,
+  giveAmount?: number,
+  from?: CurrencyCode
 ): Promise<number[]> {
   return Promise.all(
-    steps.map((s) => fetchFiatPerUsdt(s.fiat, s.tradeType, forceRefresh))
+    steps.map((step) =>
+      fetchFiatPerUsdt(
+        step.fiat,
+        step.tradeType,
+        forceRefresh,
+        transAmountForStep(step, giveAmount, from)
+      )
+    )
   );
 }
 
@@ -115,8 +160,9 @@ export interface PairExchangeRate {
 export async function getPairExchangeRate(
   from: CurrencyCode,
   to: CurrencyCode,
-  forceRefresh = false
+  options: PairRateOptions = {}
 ): Promise<PairExchangeRate> {
+  const { forceRefresh = false, giveAmount } = options;
   const steps = getConversionSteps(from, to);
   if (!steps) {
     throw new Error(`Обмен ${from} → ${to} не поддерживается`);
@@ -133,7 +179,12 @@ export async function getPairExchangeRate(
     };
   }
 
-  const stepPrices = await fetchStepPrices(steps, forceRefresh);
+  const stepPrices = await fetchStepPrices(
+    steps,
+    forceRefresh,
+    giveAmount,
+    from
+  );
   const rate = computePairRate(from, to, stepPrices);
   if (rate == null) {
     throw new Error(`Не удалось рассчитать курс ${from} → ${to}`);

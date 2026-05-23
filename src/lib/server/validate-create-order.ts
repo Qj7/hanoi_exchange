@@ -71,7 +71,9 @@ export async function validateCreateOrderBody(
 
   let rate: number;
   try {
-    const snapshot = await getPairExchangeRate(give, receive);
+    const snapshot = await getPairExchangeRate(give, receive, {
+      giveAmount: amountSide === "give" ? numeric : undefined,
+    });
     rate = snapshot.rate;
   } catch (e) {
     const message =
