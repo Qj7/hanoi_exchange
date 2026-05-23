@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { MIN_AMOUNT } from "@/lib/exchange/constants";
 import {
   CURRENCY_MAP,
@@ -18,6 +19,12 @@ import { useTelegram } from "@/lib/telegram/TelegramProvider";
 
 type Side = "give" | "receive";
 
+const AMOUNT_DEBOUNCE_MS = 400;
+
+function parseAmountInput(value: string): number {
+  return parseFloat(value.replace(",", ".")) || 0;
+}
+
 export function ExchangePage() {
   const { haptic, webApp, initData } = useTelegram();
 
@@ -26,6 +33,7 @@ export function ExchangePage() {
   const [pickerOpen, setPickerOpen] = useState<Side | null>(null);
   const [amountSide] = useState<Side>("give");
   const [amount, setAmount] = useState<string>("");
+  const debouncedAmount = useDebouncedValue(amount, AMOUNT_DEBOUNCE_MS);
   const [payMethod, setPayMethod] = useState<string>("");
   const [receiveMethod, setReceiveMethod] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -34,12 +42,16 @@ export function ExchangePage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  const numericAmount = parseFloat(amount.replace(",", ".")) || 0;
+  const numericAmount = parseAmountInput(amount);
+  const debouncedNumericAmount = parseAmountInput(debouncedAmount);
+  const amountSettled = amount === debouncedAmount;
+  const amountForRates =
+    submitAttempted || amountSettled ? numericAmount : debouncedNumericAmount;
 
   const { rate, loading: ratesLoading, error: ratesError } = useExchangeRates(
     give,
     receive,
-    amountSide === "give" && numericAmount > 0 ? numericAmount : undefined
+    amountSide === "give" && amountForRates > 0 ? amountForRates : undefined
   );
 
   const giveCurrency = CURRENCY_MAP[give];
@@ -53,9 +65,15 @@ export function ExchangePage() {
   const min = amountSide === "give" ? MIN_AMOUNT[give] : MIN_AMOUNT[receive];
 
   const conversion = useMemo(() => {
-    if (!rate || !numericAmount) return null;
-    return applyUahMarkup(give, receive, amountSide, numericAmount, rate);
-  }, [rate, numericAmount, amountSide, give, receive]);
+    if (!rate || !debouncedNumericAmount || !amountSettled) return null;
+    return applyUahMarkup(
+      give,
+      receive,
+      amountSide,
+      debouncedNumericAmount,
+      rate
+    );
+  }, [rate, debouncedNumericAmount, amountSettled, amountSide, give, receive]);
 
   const swap = () => {
     haptic("medium");
@@ -65,27 +83,35 @@ export function ExchangePage() {
     setReceiveMethod("");
   };
 
-  const fieldErrors: string[] = [];
-  if (give === receive) fieldErrors.push("Валюти не повинні збігатися");
-  if (!numericAmount) fieldErrors.push("Вкажіть суму");
-  else if (numericAmount < min)
-    fieldErrors.push(
-      `Мінімальна сума: ${formatNumber(min)} ${
-        amountSide === "give" ? give : receive
-      }`
-    );
-  if (ratesLoading) fieldErrors.push("Завантаження курсу…");
-  else if (ratesError) fieldErrors.push(ratesError);
-  else if (!rate) fieldErrors.push("Обмін цієї пари тимчасово недоступний");
+  const buildFieldErrors = (validatedAmount: number): string[] => {
+    const errors: string[] = [];
+    if (give === receive) errors.push("Валюти не повинні збігатися");
+    if (!validatedAmount) errors.push("Вкажіть суму");
+    else if (validatedAmount < min)
+      errors.push(
+        `Мінімальна сума: ${formatNumber(min)} ${
+          amountSide === "give" ? give : receive
+        }`
+      );
+    if (ratesLoading) errors.push("Завантаження курсу…");
+    else if (ratesError) errors.push(ratesError);
+    else if (!rate) errors.push("Обмін цієї пари тимчасово недоступний");
+    return errors;
+  };
 
   const methodErrors: string[] = [];
   if (!payMethod) methodErrors.push("Оберіть спосіб оплати");
   if (!receiveMethod) methodErrors.push("Оберіть спосіб отримання");
 
+  const fieldErrors = buildFieldErrors(numericAmount);
   const isValid = fieldErrors.length === 0 && methodErrors.length === 0;
 
   const displayErrors = [
-    ...(amount.length > 0 || submitAttempted ? fieldErrors : []),
+    ...((amount.length > 0 && amountSettled) || submitAttempted
+      ? buildFieldErrors(
+          submitAttempted ? numericAmount : debouncedNumericAmount
+        )
+      : []),
     ...(submitAttempted ? methodErrors : []),
   ];
 
