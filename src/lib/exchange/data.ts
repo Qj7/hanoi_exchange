@@ -40,8 +40,8 @@ export const PAYMENT_OPTIONS: PaymentOption[] = [
   { id: "usdt_trc20", label: "USDT TRC-20", currencies: ["USDT"], group: "give" },
   // RECEIVE side
   { id: "in_person", label: "Особиста зустріч", currencies: ["UAH", "VND"], group: "receive" },
-  { id: "atm_vcb", label: "Банкомат Vietcombank", currencies: ["VND"], group: "receive" },
-  { id: "transfer_vnd", label: "Переказ на VND-картку", currencies: ["VND"], group: "receive" },
+  { id: "atm_tpbank", label: "Банкомат TP Bank", currencies: ["VND"], group: "receive" },
+  { id: "transfer_qr", label: "Переказ за QR", currencies: ["VND"], group: "receive" },
   { id: "transfer_uah", label: "Переказ на UAH-картку", currencies: ["UAH"], group: "receive" },
   { id: "usdt_receive", label: "USDT TRC-20", currencies: ["USDT"], group: "receive" },
 ];
