@@ -6,6 +6,10 @@ import {
 } from "@/lib/server/orders-repository";
 import { validateTelegramWebAppInitData } from "@/lib/server/telegram-web-app";
 import { validateCreateOrderBody } from "@/lib/server/validate-create-order";
+import {
+  formatNewOrderMessage,
+  sendModeratorNotification,
+} from "@/lib/server/telegram-notify";
 
 const INIT_HEADER = "x-telegram-init-data";
 
@@ -56,6 +60,11 @@ export async function POST(request: Request) {
   if (!saved.ok) {
     return NextResponse.json({ error: saved.message }, { status: 500 });
   }
+
+  // Notify the moderator without blocking the response to the user.
+  void sendModeratorNotification(
+    formatNewOrderMessage(saved.id, validated.user, d)
+  );
 
   return NextResponse.json({ id: saved.id });
 }
