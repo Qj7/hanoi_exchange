@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { hasOrdersDatabase } from "@/lib/server/supabase-health";
 import {
   insertExchangeOrder,
@@ -61,10 +61,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: saved.message }, { status: 500 });
   }
 
-  // Notify the moderator without blocking the response to the user.
-  void sendModeratorNotification(
-    formatNewOrderMessage(saved.id, validated.user, d)
-  );
+  // On Vercel, unawaited fetch is killed when the handler returns — use after().
+  const notifyText = formatNewOrderMessage(saved.id, validated.user, d);
+  after(async () => {
+    await sendModeratorNotification(notifyText);
+  });
 
   return NextResponse.json({ id: saved.id });
 }

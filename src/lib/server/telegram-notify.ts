@@ -6,6 +6,50 @@ import type { TelegramWebAppUser } from "@/lib/server/telegram-web-app";
 
 const API = "https://api.telegram.org";
 
+function getModeratorChatId(): string | number | null {
+  const raw = process.env.TELEGRAM_MODERATOR_CHAT_ID?.trim();
+  if (!raw) return null;
+  const unquoted = raw.replace(/^["']|["']$/g, "");
+  if (/^-?\d+$/.test(unquoted)) return Number(unquoted);
+  return unquoted;
+}
+
+type TelegramApiError = {
+  ok?: false;
+  description?: string;
+  parameters?: { migrate_to_chat_id?: number };
+};
+
+async function sendTelegramMessage(
+  token: string,
+  chatId: string | number,
+  text: string
+): Promise<{ ok: true } | { ok: false; status: number; body: string; migrateTo?: number }> {
+  const res = await fetch(`${API}/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+    }),
+  });
+
+  if (res.ok) return { ok: true };
+
+  const body = await res.text().catch(() => "");
+  let migrateTo: number | undefined;
+  try {
+    const parsed = JSON.parse(body) as TelegramApiError;
+    migrateTo = parsed.parameters?.migrate_to_chat_id;
+  } catch {
+    // ignore malformed JSON
+  }
+
+  return { ok: false, status: res.status, body, migrateTo };
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -61,27 +105,31 @@ export function formatNewOrderMessage(
  */
 export async function sendModeratorNotification(text: string): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
-  const chatId = process.env.TELEGRAM_MODERATOR_CHAT_ID?.trim();
-  if (!token || !chatId) return;
+  const chatId = getModeratorChatId();
+  if (!token || chatId == null) {
+    console.warn(
+      "Telegram notify skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_MODERATOR_CHAT_ID missing"
+    );
+    return;
+  }
 
   try {
-    const res = await fetch(`${API}/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }),
-    });
+    let result = await sendTelegramMessage(token, chatId, text);
 
-    if (!res.ok) {
-      console.error(
-        "Telegram notify failed:",
-        res.status,
-        await res.text().catch(() => "")
+    if (!result.ok && result.migrateTo != null) {
+      console.warn(
+        "Telegram group migrated to supergroup; retrying and update TELEGRAM_MODERATOR_CHAT_ID to:",
+        result.migrateTo
       );
+      result = await sendTelegramMessage(token, result.migrateTo, text);
+    }
+
+    if (!result.ok) {
+      console.error("Telegram notify failed:", {
+        status: result.status,
+        chatId,
+        body: result.body,
+      });
     }
   } catch (err) {
     console.error("Telegram notify error:", err);
